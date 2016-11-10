@@ -1,0 +1,2 @@
+#the following format expected: authority;attrkey;attrvalue;role
+google;OIDC_CLAIM_email;abc@gmail.com;admin
