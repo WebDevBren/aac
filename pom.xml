@@ -308,6 +308,7 @@
 							<outputDirectory>src/main/generated-sources</outputDirectory>
 							<clearOutputDir>false</clearOutputDir>
 							<arguments>-Xvalue-constructor</arguments>
+							<locale>en</locale>
 						</configuration>
 						<goals>
 							<goal>xjc</goal>
