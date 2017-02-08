@@ -30,8 +30,8 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2RefreshToken;
 import org.springframework.security.oauth2.common.exceptions.InvalidGrantException;
 import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;
-import org.springframework.security.oauth2.provider.AuthorizationRequest;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.TokenRequest;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.transaction.annotation.Isolation;
@@ -72,11 +72,11 @@ public class NonRemovingTokenServices extends DefaultTokenServices {
 	}
 
 	@Transactional(propagation=Propagation.REQUIRES_NEW, isolation=Isolation.SERIALIZABLE)
-	public OAuth2AccessToken refreshAccessToken(String refreshTokenValue, AuthorizationRequest request) throws AuthenticationException {
+	public OAuth2AccessToken refreshAccessToken(String refreshTokenValue, TokenRequest request) throws AuthenticationException {
 		return refreshWithRepeat(refreshTokenValue, request, false);
 	}
 
-	private OAuth2AccessToken refreshWithRepeat(String refreshTokenValue, AuthorizationRequest request, boolean repeat) {
+	private OAuth2AccessToken refreshWithRepeat(String refreshTokenValue, TokenRequest request, boolean repeat) {
 		OAuth2AccessToken accessToken = localtokenStore.readAccessTokenForRefreshToken(refreshTokenValue);
 		if (accessToken == null) {
 			throw new InvalidGrantException("Invalid refresh token: " + refreshTokenValue);
@@ -141,10 +141,10 @@ public class NonRemovingTokenServices extends DefaultTokenServices {
 	}
 	
 	private ExpiringOAuth2RefreshToken createRefreshToken(OAuth2Authentication authentication) {
-		if (!isSupportRefreshToken(authentication.getAuthorizationRequest())) {
+		if (!isSupportRefreshToken(authentication.getOAuth2Request())) {
 			return null;
 		}
-		int validitySeconds = getRefreshTokenValiditySeconds(authentication.getAuthorizationRequest());
+		int validitySeconds = getRefreshTokenValiditySeconds(authentication.getOAuth2Request());
 		ExpiringOAuth2RefreshToken refreshToken = new DefaultExpiringOAuth2RefreshToken(UUID.randomUUID().toString(),
 				new Date(System.currentTimeMillis() + (validitySeconds * 1000L)));
 		return refreshToken;
@@ -152,12 +152,12 @@ public class NonRemovingTokenServices extends DefaultTokenServices {
 
 	private OAuth2AccessToken createAccessToken(OAuth2Authentication authentication, OAuth2RefreshToken refreshToken) {
 		DefaultOAuth2AccessToken token = new DefaultOAuth2AccessToken(UUID.randomUUID().toString());
-		int validitySeconds = getAccessTokenValiditySeconds(authentication.getAuthorizationRequest());
+		int validitySeconds = getAccessTokenValiditySeconds(authentication.getOAuth2Request());
 		if (validitySeconds > 0) {
 			token.setExpiration(new Date(System.currentTimeMillis() + (validitySeconds * 1000L)));
 		}
 		token.setRefreshToken(refreshToken);
-		token.setScope(authentication.getAuthorizationRequest().getScope());
+		token.setScope(authentication.getOAuth2Request().getScope());
 
 		return token;
 	}

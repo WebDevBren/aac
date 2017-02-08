@@ -16,6 +16,10 @@
 
 package it.smartcommunitylab.aac.oauth;
 
+import it.smartcommunitylab.aac.Config;
+import it.smartcommunitylab.aac.Config.AUTHORITY;
+import it.smartcommunitylab.aac.model.Resource;
+
 import java.util.Set;
 
 import javax.servlet.ServletContext;
@@ -23,20 +27,17 @@ import javax.servlet.ServletContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.common.util.OAuth2Utils;
 import org.springframework.security.oauth2.provider.AuthorizationRequest;
-import org.springframework.security.oauth2.provider.approval.TokenServicesUserApprovalHandler;
-
-import it.smartcommunitylab.aac.Config;
-import it.smartcommunitylab.aac.Config.AUTHORITY;
-import it.smartcommunitylab.aac.model.Resource;
+import org.springframework.security.oauth2.provider.approval.TokenStoreUserApprovalHandler;
 
 /**
- * Extension of {@link TokenServicesUserApprovalHandler} to enable automatic authorization
+ * Extension of {@link TokenStoreUserApprovalHandler} to enable automatic authorization
  * for trusted clients.
  * @author raman
  *
  */
-public class UserApprovalHandler extends TokenServicesUserApprovalHandler {
+public class UserApprovalHandler extends TokenStoreUserApprovalHandler { // changed
 
 	@Autowired
 	private ServletContext servletContext;
@@ -44,8 +45,8 @@ public class UserApprovalHandler extends TokenServicesUserApprovalHandler {
 	private ResourceServices resourceService;
 	
 	@Override
-	public AuthorizationRequest updateBeforeApproval(AuthorizationRequest authorizationRequest, Authentication userAuthentication) {
-		return super.updateBeforeApproval(authorizationRequest, userAuthentication);
+	public AuthorizationRequest checkForPreApproval(AuthorizationRequest authorizationRequest, Authentication userAuthentication) {
+		return super.checkForPreApproval(authorizationRequest, userAuthentication);
 	}
 
 	/**
@@ -68,7 +69,7 @@ public class UserApprovalHandler extends TokenServicesUserApprovalHandler {
 			return false;
 		}
 
-		String flag = authorizationRequest.getApprovalParameters().get(AuthorizationRequest.USER_OAUTH_APPROVAL);
+		String flag = authorizationRequest.getApprovalParameters().get(OAuth2Utils.USER_OAUTH_APPROVAL); // changed
 		boolean approved = flag != null && flag.toLowerCase().equals("true");
 		if (approved) return true;
 		

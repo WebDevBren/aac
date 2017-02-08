@@ -15,13 +15,13 @@
  */
 package it.smartcommunitylab.aac.repository;
 
+import it.smartcommunitylab.aac.model.User;
+
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-
-import it.smartcommunitylab.aac.model.User;
 /**
  * Persistent repository of {@link User} entities
  * @author raman
@@ -35,4 +35,7 @@ public interface UserRepository extends JpaRepository<User, Long>, UserRepositor
 	
 	@Query("select u from User u left join u.attributeEntities a where a.authority.name=?1 and a.key=?2 and a.value=?3")
 	List<User> findByAttribute(String authority, String attribute, String value);
+//	List<User> findByAttributeEntities(String authority, String attribute, String value);
+	
+	
 }

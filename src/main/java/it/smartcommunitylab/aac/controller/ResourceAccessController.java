@@ -16,6 +16,9 @@
 
 package it.smartcommunitylab.aac.controller;
 
+import it.smartcommunitylab.aac.oauth.ResourceServices;
+import it.smartcommunitylab.aac.repository.ClientDetailsRepository;
+
 import java.util.Collection;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,9 +36,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import it.smartcommunitylab.aac.oauth.ResourceServices;
-import it.smartcommunitylab.aac.repository.ClientDetailsRepository;
 
 /**
  * Controller for remote check the access to the resource
@@ -68,7 +68,7 @@ public class ResourceAccessController {
 		try {
 			String parsedToken = resourceFilterHelper.parseTokenFromRequest(request);
 			OAuth2Authentication auth = resourceServerTokenServices.loadAuthentication(parsedToken);
-			Collection<String> actualScope = auth.getAuthorizationRequest().getScope();
+			Collection<String> actualScope = auth.getOAuth2Request().getScope();
 			Collection<String> scopeSet = StringUtils.commaDelimitedListToSet(scope);
 			if (actualScope != null && !actualScope.isEmpty() && actualScope.containsAll(scopeSet)) {
 				return true;
@@ -81,7 +81,7 @@ public class ResourceAccessController {
 	
 	private static class ResourceFilterHelper extends OAuth2AuthenticationProcessingFilter {
 		public String parseTokenFromRequest(HttpServletRequest request) {
-			return parseToken(request);
+			return parseTokenFromRequest(request);
 		} 
 	}
 }
