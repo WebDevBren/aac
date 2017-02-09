@@ -16,6 +16,11 @@
 
 package it.smartcommunitylab.aac.manager;
 
+import it.smartcommunitylab.aac.model.User;
+import it.smartcommunitylab.aac.profile.model.AccountProfile;
+import it.smartcommunitylab.aac.profile.model.BasicProfile;
+import it.smartcommunitylab.aac.repository.UserRepository;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,11 +28,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import it.smartcommunitylab.aac.model.User;
-import it.smartcommunitylab.aac.profile.model.AccountProfile;
-import it.smartcommunitylab.aac.profile.model.BasicProfile;
-import it.smartcommunitylab.aac.repository.UserRepository;
 
 /**
  * @author raman
@@ -100,17 +100,7 @@ public class BasicProfileManager {
 		}
 		return Collections.emptyList();
 	}
-	/**
-	 * @param socialId
-	 * @return
-	 */
-	public BasicProfile getBasicProfileBySocialId(String socialId) {
-		try {
-			return BasicProfileConverter.toBasicProfile(userRepository.findBySocialId(socialId));
-		} catch (Exception e) {
-			throw new IllegalStateException("Problem reading users: "+e.getMessage());
-		}
-	}
+
 	/**
 	 * @param userId
 	 * @return

@@ -43,7 +43,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 	public List<User> getUsersByAttributes(List<Attribute> list) {
 		Map<Long,User> userMap = new HashMap<Long, User>();
 		for (Attribute a : list) {
-			List<User> attrUsers = userRepository.findByAttribute(a.getAuthority().getName(), a.getKey(), a.getValue());
+			List<User> attrUsers = userRepository.findByAttributeEntities(a.getAuthority().getName(), a.getKey(), a.getValue());
 			if (attrUsers != null) {
 				for (User u : attrUsers) {
 					userMap.put(u.getId(), u);

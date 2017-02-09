@@ -15,11 +15,11 @@
  ******************************************************************************/
 package it.smartcommunitylab.aac.manager;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import it.smartcommunitylab.aac.model.User;
 import it.smartcommunitylab.aac.profile.model.BasicProfile;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 
@@ -49,7 +49,6 @@ public class BasicProfileConverter {
 		BasicProfile minProfile = new BasicProfile();
 		minProfile.setName(user.getName());
 		minProfile.setSurname(user.getSurname());
-		minProfile.setSocialId(user.getSocialId());
 		minProfile.setUserId(user.getId().toString());
 		return minProfile;
 	}

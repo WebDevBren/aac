@@ -16,6 +16,12 @@
 
 package it.smartcommunitylab.aac.controller;
 
+import it.smartcommunitylab.aac.manager.BasicProfileManager;
+import it.smartcommunitylab.aac.profile.model.AccountProfile;
+import it.smartcommunitylab.aac.profile.model.AccountProfiles;
+import it.smartcommunitylab.aac.profile.model.BasicProfile;
+import it.smartcommunitylab.aac.profile.model.BasicProfiles;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -30,12 +36,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import it.smartcommunitylab.aac.manager.BasicProfileManager;
-import it.smartcommunitylab.aac.profile.model.AccountProfile;
-import it.smartcommunitylab.aac.profile.model.AccountProfiles;
-import it.smartcommunitylab.aac.profile.model.BasicProfile;
-import it.smartcommunitylab.aac.profile.model.BasicProfiles;
 
 /**
  * @author raman
@@ -55,19 +55,6 @@ public class BasicProfileController extends AbstractController {
 			@PathVariable("userId") String userId) throws IOException {
 		try {
 			return profileManager.getBasicProfileById(userId);
-		} catch (Exception e) {
-			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			return null;
-		}
-
-	}
-
-	@RequestMapping(method = RequestMethod.GET, value = "/basicprofile/social/{socialId}")
-	public @ResponseBody
-	BasicProfile getUserBySocialId(HttpServletResponse response,
-			@PathVariable("socialId") String socialId) throws IOException {
-		try {
-			return profileManager.getBasicProfileBySocialId(socialId);
 		} catch (Exception e) {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			return null;

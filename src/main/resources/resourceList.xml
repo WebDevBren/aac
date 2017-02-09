@@ -12,7 +12,6 @@
 	<resourceMapping uri="profile.basicprofile.me" pathPattern="/basicprofile/me"/>
   <resourceMapping uri="profile.accountprofile.me" pathPattern="/accountprofile/me"/>
 	
-    <resourceMapping uri="profile.basicprofile.all" pathPattern="/basicprofile/social/{socialId}"/>
     <resourceMapping uri="profile.basicprofile.all" pathPattern="/basicprofile/all/{userId}"/>
 	  <resourceMapping uri="profile.basicprofile.all" pathPattern="/basicprofile/all"/>
     <resourceMapping uri="profile.basicprofile.all" pathPattern="/basicprofile/profiles"/>

@@ -23,7 +23,6 @@ public class BasicProfile {
 	private String name;
 	private String surname;
 	
-	private String socialId;
 	private String userId;
 
 	public String getName() {
@@ -40,14 +39,6 @@ public class BasicProfile {
 
 	public void setSurname(String surname) {
 		this.surname = surname;
-	}
-
-	public String getSocialId() {
-		return socialId;
-	}
-
-	public void setSocialId(String socialId) {
-		this.socialId = socialId;
 	}
 
 	public String getUserId() {

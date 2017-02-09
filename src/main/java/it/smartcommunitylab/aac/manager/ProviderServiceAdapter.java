@@ -15,6 +15,14 @@
  */
 package it.smartcommunitylab.aac.manager;
 
+import it.smartcommunitylab.aac.Config;
+import it.smartcommunitylab.aac.model.Attribute;
+import it.smartcommunitylab.aac.model.Authority;
+import it.smartcommunitylab.aac.model.User;
+import it.smartcommunitylab.aac.repository.AttributeRepository;
+import it.smartcommunitylab.aac.repository.AuthorityRepository;
+import it.smartcommunitylab.aac.repository.UserRepository;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -30,15 +38,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import it.smartcommunitylab.aac.Config;
-import it.smartcommunitylab.aac.model.Attribute;
-import it.smartcommunitylab.aac.model.Authority;
-import it.smartcommunitylab.aac.model.SocialEngineException;
-import it.smartcommunitylab.aac.model.User;
-import it.smartcommunitylab.aac.repository.AttributeRepository;
-import it.smartcommunitylab.aac.repository.AuthorityRepository;
-import it.smartcommunitylab.aac.repository.UserRepository;
 
 /**
  * This class manages operations of the service
@@ -61,8 +60,6 @@ public class ProviderServiceAdapter {
 	private AttributeRepository attributeRepository;
 	@Autowired
 	private SecurityAdapter secAdapter;
-	@Autowired
-	private SocialEngine socialEngine;
 	
 	
 	@PostConstruct
@@ -114,18 +111,8 @@ public class ProviderServiceAdapter {
 
 		User user = null;
 		if (users.isEmpty()) {
-			String socialId = "1";
-			user = new User(socialId, attributes.get(Config.NAME_ATTR), attributes.get(Config.SURNAME_ATTR), new HashSet<Attribute>(list));
+			user = new User(attributes.get(Config.NAME_ATTR), attributes.get(Config.SURNAME_ATTR), new HashSet<Attribute>(list));
 			user = userRepository.save(user);
-			if (!testMode) {
-				try {
-					socialId = socialEngine.createUser(""+user.getId());
-					user.setSocialId(socialId);
-					userRepository.save(user);
-				} catch (SocialEngineException e) {
-					throw new IllegalArgumentException(e.getMessage(),e);
-				}
-			}
 		} else {
 			user = users.get(0);
 			attributeRepository.deleteInBatch(user.getAttributeEntities());

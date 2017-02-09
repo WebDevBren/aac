@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -50,9 +49,6 @@ public class User implements Serializable {
 	@JoinColumn(name = "USER_ID", nullable=false)
 	private Set<Attribute> attributeEntities;
 
-	@Column(name = "social_id")
-	private String socialId;
-
 	private String name; 
 	private String surname;
 	private String fullName;
@@ -65,14 +61,12 @@ public class User implements Serializable {
 	/**
 	 * Create user with the specified parameters
 	 * @param id
-	 * @param socialId
 	 * @param name
 	 * @param surname
 	 * @param attrs 
 	 */
-	public User(String socialId, String name, String surname, HashSet<Attribute> attrs) {
+	public User(String name, String surname, HashSet<Attribute> attrs) {
 		super();
-		this.socialId = socialId;
 		updateNames(name, surname);
 		this.attributeEntities = attrs;
 	}
@@ -99,14 +93,6 @@ public class User implements Serializable {
 	@Override
 	public String toString() {
 		return name + " " + surname;
-	}
-
-	public String getSocialId() {
-		return socialId;
-	}
-
-	public void setSocialId(String socialId) {
-		this.socialId = socialId;
 	}
 
 	public String getName() {

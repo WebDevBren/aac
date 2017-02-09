@@ -31,11 +31,10 @@ import org.springframework.stereotype.Repository;
 public interface UserRepository extends JpaRepository<User, Long>, UserRepositoryCustom {
 
 	List<User> findByFullNameLike(String text);
-	User findBySocialId(String socialId);
 	
 	@Query("select u from User u left join u.attributeEntities a where a.authority.name=?1 and a.key=?2 and a.value=?3")
-	List<User> findByAttribute(String authority, String attribute, String value);
-//	List<User> findByAttributeEntities(String authority, String attribute, String value);
+//	List<User> findByAttribute(String authority, String attribute, String value);
+	List<User> findByAttributeEntities(String authority, String attribute, String value);
 	
 	
 }
