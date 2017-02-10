@@ -33,8 +33,9 @@ public interface UserRepository extends JpaRepository<User, Long>, UserRepositor
 	List<User> findByFullNameLike(String text);
 	
 	@Query("select u from User u left join u.attributeEntities a where a.authority.name=?1 and a.key=?2 and a.value=?3")
-//	List<User> findByAttribute(String authority, String attribute, String value);
 	List<User> findByAttributeEntities(String authority, String attribute, String value);
-	
+
+//	@Query("select u from User u left join u.attributeEntities a where a.authority.name=?1 and a.key=?2 and a.value=?3")
+//	List<User> findByAttribute(String authority, String attribute, String value);
 	
 }

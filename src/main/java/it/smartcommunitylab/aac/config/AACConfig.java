@@ -17,11 +17,13 @@ import it.smartcommunitylab.aac.oauth.UserApprovalHandler;
 import it.smartcommunitylab.aac.oauth.UserDetailsRepo;
 
 import java.beans.PropertyVetoException;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -39,14 +41,24 @@ import org.springframework.security.oauth2.provider.OAuth2RequestFactory;
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
 import org.springframework.security.oauth2.provider.request.DefaultOAuth2RequestFactory;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.ViewResolver;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
+import org.springframework.web.servlet.view.ContentNegotiatingViewResolver;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
+import org.springframework.web.servlet.view.JstlView;
+import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
+import com.google.api.client.util.Lists;
 import com.google.common.collect.Maps;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 import eu.trentorise.smartcampus.resourceprovider.filter.ResourceAuthenticationManager;
-import eu.trentorise.smartcampus.resourceprovider.filter.ResourceFilter;
 import eu.trentorise.smartcampus.resourceprovider.jdbc.JdbcServices;
 //import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
 
@@ -57,12 +69,28 @@ import eu.trentorise.smartcampus.resourceprovider.jdbc.JdbcServices;
 @ComponentScan("it.smartcommunitylab.aac")
 @PropertySource("classpath:commoncore.properties")
 @EnableTransactionManagement
+@EnableAutoConfiguration
 @EnableJpaRepositories(basePackages = {"it.smartcommunitylab.aac.repository"}, queryLookupStrategy = QueryLookupStrategy.Key.CREATE)
-public class AACConfig {
+public class AACConfig extends WebMvcConfigurerAdapter {
 
+	private static final String[] CLASSPATH_RESOURCE_LOCATIONS = {
+		"classpath:/META-INF/resources/", "classpath:/resources/",
+		"classpath:/static/", "classpath:/public/" };		
+	
 	@Autowired
 	private Environment env;
 	
+//	@Bean
+//	public TemplateEngine getTemplateEngine() {
+//		TemplateEngine bean = new TemplateEngine();
+//		ClassLoaderTemplateResolver tr = new ClassLoaderTemplateResolver(); 
+//		tr.setPrefix("/templates/");
+//		tr.setSuffix(".html");
+//		tr.setCharacterEncoding("UTF-8");
+//		tr.setTemplateMode("HTML5");
+//		bean.setTemplateResolver(tr);
+//		return bean;
+//	}
 	
 	@Bean
 	public ClientCredentialsFilter getClientCredentialsFilter() throws PropertyVetoException {
@@ -81,13 +109,6 @@ public class AACConfig {
 		ResourceAuthenticationManager bean = new ResourceAuthenticationManager();
 		bean.setTokenStore(getTokenStore());
 		bean.setAuthServices(getJdbcServices());
-		return bean;
-	}
-	
-	@Bean
-	public ResourceFilter getResourceFilter() throws PropertyVetoException {
-		ResourceFilter bean = new ResourceFilter();
-		bean.setAuthenticationManager(getResourceAuthenticationManager());
 		return bean;
 	}
 	
@@ -264,6 +285,49 @@ public class AACConfig {
 		CookieLocaleResolver bean = new CookieLocaleResolver();
 		bean.setDefaultLocale(Locale.ITALY);
 		return bean;
+	}	
+	
+    @Override
+    public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
+        configurer.enable();
+    }	
+	
+//    @Bean
+//    public ContentNegotiationManager getContentNegotiationManager() {
+//    	ContentNegotiationManager bean = new ContentNegotiationManager();
+//    	
+//    	bean.
+//    }
+    
+    @Bean
+    public ViewResolver viewResolver() {
+    	ContentNegotiatingViewResolver bean = new ContentNegotiatingViewResolver();
+ 
+    	InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+        viewResolver.setViewClass(JstlView.class);
+        viewResolver.setPrefix("/WEB-INF/jsp/");
+        viewResolver.setSuffix(".jsp");
+ 
+        List<ViewResolver> viewResolvers = Lists.newArrayList();
+        viewResolvers.add(viewResolver);
+        bean.setViewResolvers(viewResolvers);
+        
+        List<View> views = Lists.newArrayList();
+        MappingJackson2JsonView view = new MappingJackson2JsonView();
+        views.add(view);        
+        bean.setDefaultViews(views);
+        
+        return bean;
+    }	
+	
+	 @Override
+	 public void addResourceHandlers(ResourceHandlerRegistry registry) {
+		 registry.addResourceHandler("/**").addResourceLocations(CLASSPATH_RESOURCE_LOCATIONS);		 
+	 }
+	 
+	@Override
+	public void addCorsMappings(CorsRegistry registry) {
+		registry.addMapping("/**").allowedMethods("PUT", "DELETE", "GET", "POST").allowedOrigins("*");
 	}	
 	
 	

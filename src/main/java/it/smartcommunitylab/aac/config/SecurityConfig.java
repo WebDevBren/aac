@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -24,6 +25,9 @@ import org.springframework.security.oauth2.provider.client.JdbcClientDetailsServ
 import org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHandler;
 import org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
+import org.springframework.security.web.authentication.preauth.RequestHeaderAuthenticationFilter;
+
+import eu.trentorise.smartcampus.resourceprovider.filter.ResourceFilter;
 
 @Configuration 
 @EnableAuthorizationServer
@@ -34,6 +38,9 @@ public class SecurityConfig {
 	
 	@Autowired
 	private JdbcClientDetailsService clientDetailsService;
+	
+	@Autowired
+	private AuthenticationManager authenticationManager;
 	
 	@Autowired
 	public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
@@ -96,9 +103,62 @@ public class SecurityConfig {
 		return new InternalRegFilter();
 	}		
 	
+	@Bean
+	public ResourceFilter getResourceFilter() throws PropertyVetoException {
+		ResourceFilter bean = new ResourceFilter();
+		bean.setAuthenticationManager(authenticationManager);
+		return bean;
+	}	
+	
+	@Configuration
+	@Order(10)
+	public static class BasicProfileSecurityConfig extends WebSecurityConfigurerAdapter {
+
+		@Autowired
+		private ResourceFilter resourceFilter;
+
+		@Override
+		public void configure(HttpSecurity http) throws Exception {
+			http.csrf().disable();
+			http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+			http.antMatcher("/basicprofile/**").authorizeRequests().antMatchers("/basicprofile/**").fullyAuthenticated().and()
+			.addFilterBefore(resourceFilter, RequestHeaderAuthenticationFilter.class);
+		}
+
+	}
+
+	@Configuration
+	@Order(100)
+	public static class ConsoleSecurityConfig extends WebSecurityConfigurerAdapter {
+
+		@Autowired
+		private ResourceFilter resourceFilter;
+
+		@Override
+		public void configure(HttpSecurity http) throws Exception {
+    		http.csrf().disable();
+    		http.rememberMe();		
+
+    		http.authorizeRequests().antMatchers("/dev/**","/oauth/**").hasAnyAuthority("ROLE_CONSOLE").and()
+    		.formLogin().loginPage("/eauth/dev").permitAll().and().logout().permitAll();
+//    		.formLogin().loginPage("/eauth/dev").permitAll().and().logout().invalidateHttpSession(true).deleteCookies("JSESSIONID","open_id_session_id","vasdevgoogle").logoutUrl("/logout").logoutSuccessUrl("/dev").permitAll();
+		}
+
+	}	
+	
+	
+	
+//	  <sec:http disable-url-rewriting="true">
+//      <sec:intercept-url pattern="/dev/**" access="IS_AUTHENTICATED_FULLY" />
+//      <sec:intercept-url pattern="/oauth/**" access="IS_AUTHENTICATED_FULLY" />
+//      <sec:form-login login-page="/eauth/dev" />
+//      <sec:logout invalidate-session="true" logout-url="/logout" delete-cookies="JSESSIONID,open_id_session_id,vasdevgoogle" logout-success-url="/dev"/>
+//  </sec:http>	
+    
     @Configuration
-    @Order(10)                                                        
-    public static class ServiceSecurityConfig extends WebSecurityConfigurerAdapter {
+    @Order(1000)                                                        
+    public static class NoSecurityConfig extends WebSecurityConfigurerAdapter {
     
     	@Override
     	protected void configure(HttpSecurity http) throws Exception {
@@ -109,7 +169,9 @@ public class SecurityConfig {
 
     	} 	
     	
-    }   	
-	
+    }      
+    
+    
+    
 	
 }
