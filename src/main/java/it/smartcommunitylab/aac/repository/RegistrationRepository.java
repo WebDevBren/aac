@@ -16,10 +16,11 @@
 
 package it.smartcommunitylab.aac.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
 import it.smartcommunitylab.aac.model.Registration;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 /**
  * @author raman
@@ -28,6 +29,9 @@ import it.smartcommunitylab.aac.model.Registration;
 @Repository
 public interface RegistrationRepository extends JpaRepository<Registration, Long>{
 
+	@Query("select r from Registration r where r.email=?1")
 	Registration findByEmail(String email);
+	
+	@Query("select r from Registration r where r.confirmationKey=?1")
 	Registration findByConfirmationKey(String confirmationKey);
 }

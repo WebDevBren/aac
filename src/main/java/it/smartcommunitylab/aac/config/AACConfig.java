@@ -28,11 +28,10 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.repository.query.QueryLookupStrategy;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
@@ -41,6 +40,7 @@ import org.springframework.security.oauth2.provider.OAuth2RequestFactory;
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
 import org.springframework.security.oauth2.provider.request.DefaultOAuth2RequestFactory;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -63,14 +63,14 @@ import eu.trentorise.smartcampus.resourceprovider.jdbc.JdbcServices;
 //import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
 
 @Configuration 
-@ComponentScan//("it.smartcommunitylab.aac")
 @EntityScan({"it.smartcommunitylab.aac.model", "it.smartcommunitylab.aac.profile.model"})
 @EnableWebMvc
 @ComponentScan("it.smartcommunitylab.aac")
-@PropertySource("classpath:commoncore.properties")
+//@PropertySource("classpath:commoncore.properties")
 @EnableTransactionManagement
 @EnableAutoConfiguration
-@EnableJpaRepositories(basePackages = {"it.smartcommunitylab.aac.repository"}, queryLookupStrategy = QueryLookupStrategy.Key.CREATE)
+@EnableSpringDataWebSupport
+@EnableJpaRepositories(basePackages = {"it.smartcommunitylab.aac"}, queryLookupStrategy = QueryLookupStrategy.Key.CREATE_IF_NOT_FOUND)
 public class AACConfig extends WebMvcConfigurerAdapter {
 
 	private static final String[] CLASSPATH_RESOURCE_LOCATIONS = {
@@ -92,10 +92,19 @@ public class AACConfig extends WebMvcConfigurerAdapter {
 //		return bean;
 //	}
 	
+//	@Bean
+//	public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+//		return new PropertySourcesPlaceholderConfigurer();
+//	}	
+	
+	@Bean public RequestContextListener requestContextListener(){
+	    return new RequestContextListener();
+	} 	
+	
 	@Bean
 	public ClientCredentialsFilter getClientCredentialsFilter() throws PropertyVetoException {
 		ClientCredentialsFilter ccf = new ClientCredentialsFilter("/internal/register/rest");
-		ccf.setAuthenticationManager(getResourceAuthenticationManager());
+		ccf.setAuthenticationManager(getAuthenticationManager());
 		return ccf;
 	}	
 
@@ -104,8 +113,8 @@ public class AACConfig extends WebMvcConfigurerAdapter {
 		return new UserDetailsRepo();
 	}
 	
-	@Bean
-	public AuthenticationManager getResourceAuthenticationManager() throws PropertyVetoException {
+	@Bean("authenticationManager")
+	public AuthenticationManager getAuthenticationManager() throws PropertyVetoException {
 		ResourceAuthenticationManager bean = new ResourceAuthenticationManager();
 		bean.setTokenStore(getTokenStore());
 		bean.setAuthServices(getJdbcServices());
@@ -169,12 +178,12 @@ public class AACConfig extends WebMvcConfigurerAdapter {
 	
 	
 	
-	@Bean
-	public ResourceBundleMessageSource getMessageSource() {
-		ResourceBundleMessageSource bean = new ResourceBundleMessageSource();
-		bean.setBasename("resources/internal");
-		return bean;
-	}
+//	@Bean
+//	public ResourceBundleMessageSource getMessageSource() {
+//		ResourceBundleMessageSource bean = new ResourceBundleMessageSource();
+//		bean.setBasename("resources/internal");
+//		return bean;
+//	}
 	
 	@Bean
 	public AuthorityHandlerContainer getAuthorityHandlerContainer() {
@@ -219,18 +228,21 @@ public class AACConfig extends WebMvcConfigurerAdapter {
 		adapter.setDatabasePlatform(env.getProperty("jdbc.dialect"));
 		adapter.setShowSql(true);
 		adapter.setGenerateDdl(true);
-		
 		bean.setJpaVendorAdapter(adapter);
+		
 		bean.setJpaDialect(new IsolationSupportHibernateJpaDialect());
 		
 		Properties props = new Properties();
 		props.setProperty("hibernate.hbm2ddl.auto", "update");
 		bean.setJpaProperties(props);
-
+		
+//		bean.setPackagesToScan("it.smartcommunitylab.aac.model", "it.smartcommunitylab.aac.profile.model");
+//		bean.setPersistenceUnitManager(null);
+		
 		return bean;
 	}
 	
-	
+//	
 //	@Bean(name="entityManager")
 //	public EntityManager getEntityManager() throws PropertyVetoException {
 //		EntityManager emb = getEntityManagerFactoryBean().getObject().createEntityManager();

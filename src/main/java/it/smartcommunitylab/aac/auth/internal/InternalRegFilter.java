@@ -7,19 +7,22 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 public class InternalRegFilter extends OncePerRequestFilter {
 
-	@Value("${application.url}")
 	private String applicationURL;
 
-	@Value("${mode.testing}")
 	private boolean testMode;
 
 	public static final String SESSION_INTERNAL_CHECK = "internal-login"; 
 	
+	public InternalRegFilter(String applicationURL, boolean testMode) {
+		super();
+		this.applicationURL = applicationURL;
+		this.testMode = testMode;
+	}
+
 	@Override
 	public void destroy() {
 	}

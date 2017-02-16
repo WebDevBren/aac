@@ -1,177 +1,141 @@
 package it.smartcommunitylab.aac.config;
 
-import it.smartcommunitylab.aac.auth.fb.FBFilter;
-import it.smartcommunitylab.aac.auth.google.GoogleProviderFilter;
-import it.smartcommunitylab.aac.auth.internal.InternalRegFilter;
-import it.smartcommunitylab.aac.oauth.InternalUserDetailsRepo;
+import java.util.ArrayList;
+import java.util.List;
 
-import java.beans.PropertyVetoException;
+import javax.servlet.Filter;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
-import org.springframework.core.env.Environment;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.OAuth2ClientContext;
+import org.springframework.security.oauth2.client.OAuth2RestTemplate;
+import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
+import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilter;
+import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
-import org.springframework.security.oauth2.provider.client.ClientDetailsUserDetailsService;
-import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
-import org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHandler;
-import org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint;
-import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
-import org.springframework.security.web.authentication.preauth.RequestHeaderAuthenticationFilter;
-
-import eu.trentorise.smartcampus.resourceprovider.filter.ResourceFilter;
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.web.filter.CompositeFilter;
 
 @Configuration 
+@EnableOAuth2Client
+//@EnableOAuth2Sso
 @EnableAuthorizationServer
-public class SecurityConfig {
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-	@Autowired
-	private Environment env;
+	@Value("${application.url}")
+	private String applicationURL;
+
+	@Value("${mode.testing}")
+	private boolean testMode;		
 	
 	@Autowired
-	private JdbcClientDetailsService clientDetailsService;
-	
-	@Autowired
-	private AuthenticationManager authenticationManager;
-	
-	@Autowired
-	public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-		auth.userDetailsService(getClientDetailsUserService());
-		auth.userDetailsService(getInternalUserDetailsService());
-		// password-encoder???
-	}	
-	
+	OAuth2ClientContext oauth2ClientContext;
+
 	@Bean
-	public InternalUserDetailsRepo getInternalUserDetailsService() {
-		return new InternalUserDetailsRepo();
-	}	
-	
-	@Bean
-	public PasswordEncoder getInternalPasswordEncoder() {
-		return new BCryptPasswordEncoder();
-	}	
-	
-	@Bean
-	public ClientDetailsUserDetailsService getClientDetailsUserService() throws PropertyVetoException {
-		ClientDetailsUserDetailsService bean = new ClientDetailsUserDetailsService(clientDetailsService);
-		return bean;
-	}	
-	
-// where needed	
-//	@Bean
-//	public ClientCredentialsTokenEndpointFilter getClientCredentialsTokenEndpointFilter() throws Exception {
-//		ClientCredentialsTokenEndpointFilter bean = new ClientCredentialsTokenEndpointFilter();
-//		bean.setAuthenticationManager(authenticationManagerBean());
-//		return bean;
-//	}
-	
-	@Bean
-	public OAuth2AuthenticationEntryPoint getClientAuthenticationEntryPoint() {
-		return new OAuth2AuthenticationEntryPoint();
+	public FilterRegistrationBean oauth2ClientFilterRegistration(OAuth2ClientContextFilter filter) {
+		FilterRegistrationBean registration = new FilterRegistrationBean();
+		registration.setFilter(filter);
+		registration.setOrder(-100);
+		return registration;
 	}
 	
 	@Bean
-	public Http403ForbiddenEntryPoint getForbEntryPoint() {
-		return new Http403ForbiddenEntryPoint();
+	@ConfigurationProperties("google")
+	public ClientResources google() {
+		return new ClientResources();
 	}
-	
+
 	@Bean
-	public OAuth2AccessDeniedHandler getOauthAccessDeniedHandler() {
-		return new OAuth2AccessDeniedHandler();
+	@ConfigurationProperties("facebook")
+	public ClientResources facebook() {
+		return new ClientResources();
 	}	
 	
-	@Bean
-	public GoogleProviderFilter getGoogleProviderFilter() {
-		return new GoogleProviderFilter();
-	}
-	
-	@Bean
-	public FBFilter getFBFilter() {
-		return new FBFilter();
+	private Filter ssoFilter() {
+		CompositeFilter filter = new CompositeFilter();
+		List<Filter> filters = new ArrayList<>();
+		filters.add(ssoFilter(facebook(), "/auth/facebook-oauth/callback", "/eauth/facebook"));
+		filters.add(ssoFilter(google(), "/auth/google-oauth/callback", "/eauth/google"));
+//		filters.add(new GoogleProviderFilter(applicationURL, testMode));
+		filter.setFilters(filters);
+		return filter;
 	}	
 	
-	@Bean
-	public InternalRegFilter getInternalRegFilter() {
-		return new InternalRegFilter();
-	}		
-	
-	@Bean
-	public ResourceFilter getResourceFilter() throws PropertyVetoException {
-		ResourceFilter bean = new ResourceFilter();
-		bean.setAuthenticationManager(authenticationManager);
-		return bean;
+	private Filter ssoFilter(ClientResources client, String path, String target) {
+		OAuth2ClientAuthenticationProcessingFilter filter = new OAuth2ClientAuthenticationProcessingFilter(
+				path);
+		
+		filter.setAuthenticationSuccessHandler(new SimpleUrlAuthenticationSuccessHandler(target));
+		
+		
+		OAuth2RestTemplate template = new OAuth2RestTemplate(client.getClient(), oauth2ClientContext);
+		filter.setRestTemplate(template);
+		UserInfoTokenServices tokenServices = new UserInfoTokenServices(
+				client.getResource().getUserInfoUri(), client.getClient().getClientId());
+		tokenServices.setRestTemplate(template);
+		filter.setTokenServices(tokenServices);
+		return filter;
 	}	
 	
-	@Configuration
-	@Order(10)
-	public static class BasicProfileSecurityConfig extends WebSecurityConfigurerAdapter {
+	
+	class ClientResources {
 
-		@Autowired
-		private ResourceFilter resourceFilter;
+		@NestedConfigurationProperty
+		private AuthorizationCodeResourceDetails client = new AuthorizationCodeResourceDetails();
 
-		@Override
-		public void configure(HttpSecurity http) throws Exception {
-			http.csrf().disable();
-			http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+		@NestedConfigurationProperty
+		private ResourceServerProperties resource = new ResourceServerProperties();
 
-			http.antMatcher("/basicprofile/**").authorizeRequests().antMatchers("/basicprofile/**").fullyAuthenticated().and()
-			.addFilterBefore(resourceFilter, RequestHeaderAuthenticationFilter.class);
+		public AuthorizationCodeResourceDetails getClient() {
+			return client;
 		}
 
-	}
-
-	@Configuration
-	@Order(100)
-	public static class ConsoleSecurityConfig extends WebSecurityConfigurerAdapter {
-
-		@Autowired
-		private ResourceFilter resourceFilter;
-
-		@Override
-		public void configure(HttpSecurity http) throws Exception {
-    		http.csrf().disable();
-    		http.rememberMe();		
-
-    		http.authorizeRequests().antMatchers("/dev/**","/oauth/**").hasAnyAuthority("ROLE_CONSOLE").and()
-    		.formLogin().loginPage("/eauth/dev").permitAll().and().logout().permitAll();
-//    		.formLogin().loginPage("/eauth/dev").permitAll().and().logout().invalidateHttpSession(true).deleteCookies("JSESSIONID","open_id_session_id","vasdevgoogle").logoutUrl("/logout").logoutSuccessUrl("/dev").permitAll();
+		public ResourceServerProperties getResource() {
+			return resource;
 		}
-
 	}	
 	
 	
+	@Override
+	public void configure(HttpSecurity http) throws Exception {
+//		http.csrf().disable();
+//
+//		http.antMatcher("/**").authorizeRequests().antMatchers("/", "/login**", "/webjars/**").permitAll().anyRequest()
+//		.authenticated().and()
+//		.authorizeRequests().antMatchers("/dev/**","/oauth/**").fullyAuthenticated().and()
+//		.formLogin().loginPage("/eauth/dev").permitAll().and().logout().permitAll();
+		
+
+//		http.antMatcher("/**").authorizeRequests().antMatchers("/", "/dev/**").permitAll().anyRequest()
+//		.authenticated().and().exceptionHandling()
+//		.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/dev")).and().logout()
+//		.logoutSuccessUrl("/").permitAll().and().csrf()
+//		.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and()
+//		.addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);		
+		
+		http.authorizeRequests().antMatchers("/dev/**","/oauth/**").fullyAuthenticated().and().exceptionHandling()
+		.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/eauth/dev")).and().logout()
+		.logoutSuccessUrl("/").permitAll().and().csrf()
+		.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and()
+		.addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);
 	
-//	  <sec:http disable-url-rewriting="true">
-//      <sec:intercept-url pattern="/dev/**" access="IS_AUTHENTICATED_FULLY" />
-//      <sec:intercept-url pattern="/oauth/**" access="IS_AUTHENTICATED_FULLY" />
-//      <sec:form-login login-page="/eauth/dev" />
-//      <sec:logout invalidate-session="true" logout-url="/logout" delete-cookies="JSESSIONID,open_id_session_id,vasdevgoogle" logout-success-url="/dev"/>
-//  </sec:http>	
-    
-    @Configuration
-    @Order(1000)                                                        
-    public static class NoSecurityConfig extends WebSecurityConfigurerAdapter {
-    
-    	@Override
-    	protected void configure(HttpSecurity http) throws Exception {
-    		http.csrf().disable();
-    		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-
-    		http.authorizeRequests().antMatchers("/**").anonymous().anyRequest().permitAll();
-
-    	} 	
-    	
-    }      
-    
-    
-    
+		
+		
+	}
+	
+	
 	
 }

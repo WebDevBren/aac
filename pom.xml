@@ -54,7 +54,6 @@
 			<artifactId>spring-boot-starter-jetty</artifactId>
 		</dependency> -->		
 		
-		
 		<dependency>
 		  <groupId>org.apache.tomcat.embed</groupId>
 		  <artifactId>tomcat-embed-jasper</artifactId>
@@ -132,7 +131,12 @@
 			<!-- <version>${spring-version}</version> -->
 			<type>jar</type>
 		</dependency>		
-		
+	
+		<dependency>
+			<groupId>org.springframework.security.oauth</groupId>
+			<artifactId>spring-security-oauth2</artifactId>
+			<!-- <version>1.0.5.RELEASE</version> -->
+		</dependency>		
 		
 		<dependency>
 			<groupId>org.aspectj</groupId>
@@ -287,6 +291,16 @@
 		<!-- <scope>provided</scope> -->
 	</dependency>    
     
+	<dependency>
+		<groupId>org.scala-lang</groupId>
+		<artifactId>scala-library</artifactId>
+		<version>2.11.0</version>
+	</dependency>
+	<dependency>
+		<groupId>org.springframework.security.oauth</groupId>
+		<artifactId>spring-security-oauth2-javaconfig</artifactId>
+		<version>1.0.0.M1</version>
+	</dependency>
 	</dependencies>
 
 	<build>

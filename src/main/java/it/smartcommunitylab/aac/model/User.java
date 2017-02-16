@@ -44,8 +44,9 @@ public class User implements Serializable {
 	@GeneratedValue
 	private Long id;
 
-	@OneToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST,
-			CascadeType.REMOVE, CascadeType.MERGE })
+//	@OneToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST,
+//			CascadeType.REMOVE, CascadeType.MERGE })
+	@OneToMany(fetch = FetchType.LAZY, cascade = { CascadeType.ALL})	
 	@JoinColumn(name = "USER_ID", nullable=false)
 	private Set<Attribute> attributeEntities;
 

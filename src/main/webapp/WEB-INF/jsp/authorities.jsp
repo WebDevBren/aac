@@ -35,7 +35,7 @@
 <% Map<String, String> authorities = (Map<String,String>)request.getAttribute("authorities");
    for (String s : authorities.keySet()) {%>		
             <li>
-		      <a href="<%=request.getContextPath() %>/eauth/<%=s %>"><%=s.toUpperCase() %></a>
+		      <a href="<%=request.getContextPath() %>/auth/<%=s %>-oauth/callback"><%=s.toUpperCase() %></a>
             </li>
 <%  } %>            
 		</ul>

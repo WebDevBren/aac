@@ -15,12 +15,13 @@
  */
 package it.smartcommunitylab.aac.repository;
 
+import it.smartcommunitylab.aac.model.ClientDetailsEntity;
+
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-
-import it.smartcommunitylab.aac.model.ClientDetailsEntity;
 /**
  * Persistent repository of {@link ClientDetailsEntity} entities
  * @author raman
@@ -29,7 +30,11 @@ import it.smartcommunitylab.aac.model.ClientDetailsEntity;
 @Repository
 public interface ClientDetailsRepository extends JpaRepository<ClientDetailsEntity, Long> {
 
+	@Query("select c from ClientDetailsEntity c where c.developerId=?1")
 	public List<ClientDetailsEntity> findByDeveloperId(Long developerId);
+	
+	@Query("select c from ClientDetailsEntity c where c.clientId=?1")
 	public ClientDetailsEntity findByClientId(String clientId);
 
 }
+//@Query("select u from User u left join u.attributeEntities a where a.authority.name=?1 and a.key=?2 and a.value=?3")

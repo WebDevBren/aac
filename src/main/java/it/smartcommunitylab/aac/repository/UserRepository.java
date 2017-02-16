@@ -19,6 +19,7 @@ import it.smartcommunitylab.aac.model.User;
 
 import java.util.List;
 
+import org.hibernate.annotations.NamedQuery;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -28,11 +29,14 @@ import org.springframework.stereotype.Repository;
  *
  */
 @Repository
+@NamedQuery(name="UserRepository.findByAttributeEntities", query="select u from User u left join u.attributeEntities a where a.authority.name=?1 and a.key=?2 and a.value=?3")
 public interface UserRepository extends JpaRepository<User, Long>, UserRepositoryCustom {
 
+	@Query("select u from User u where u.fullName like ?1")
 	List<User> findByFullNameLike(String text);
 	
 	@Query("select u from User u left join u.attributeEntities a where a.authority.name=?1 and a.key=?2 and a.value=?3")
+//	@Query(name="findByAttributeEntities", value="select u from User u left join u.attributeEntities a where a.authority.name=?1 and a.key=?2 and a.value=?3")
 	List<User> findByAttributeEntities(String authority, String attribute, String value);
 
 //	@Query("select u from User u left join u.attributeEntities a where a.authority.name=?1 and a.key=?2 and a.value=?3")

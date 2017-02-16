@@ -15,13 +15,14 @@
  */
 package it.smartcommunitylab.aac.repository;
 
+import it.smartcommunitylab.aac.model.ResourceParameter;
+import it.smartcommunitylab.aac.model.ServiceDescriptor;
+
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-
-import it.smartcommunitylab.aac.model.ResourceParameter;
-import it.smartcommunitylab.aac.model.ServiceDescriptor;
 
 /**
  * Persistent repository of {@link ResourceParameter} entities
@@ -31,12 +32,18 @@ import it.smartcommunitylab.aac.model.ServiceDescriptor;
 @Repository
 public interface ResourceParameterRepository extends JpaRepository<ResourceParameter, Long> {
 
+	
+	@Query("select r from ResourceParameter r where r.clientId=?1")
 	List<ResourceParameter> findByClientId(String clientId);
+	
+	@Query("select r from ResourceParameter r where r.service=?1")
 	List<ResourceParameter>  findByService(ServiceDescriptor s);
 //	List<ResourceParameter> findByClientIdAndServiceId(String clientId, String serviceId);
 //	List<ResourceParameter> findByClientIdAndResourceId(String clientId, String resourceId);
 //
 //	List<ResourceParameter> findByResourceId(String resourceId);
 //	List<ResourceParameter> findByServiceId(String serviceId);
+	
+	@Query("select r from ResourceParameter r where r.service=?1 and r.parameter=?2")
 	List<ResourceParameter> findByServiceAndParameter(ServiceDescriptor service, String parameter);
 }
