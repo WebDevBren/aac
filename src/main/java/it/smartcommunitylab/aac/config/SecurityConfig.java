@@ -25,12 +25,14 @@ import org.springframework.security.oauth2.config.annotation.configurers.ClientD
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
+import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
+import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
+import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.filter.CompositeFilter;
 
 import it.smartcommunitylab.aac.common.Utils;
@@ -154,4 +156,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 					.authenticationManager(authenticationManager);
 		}		
 	}
+	
+	@Configuration
+	@EnableResourceServer
+	protected static class BasicMeResourceServerConfiguration extends ResourceServerConfigurerAdapter {
+		public void configure(HttpSecurity http) throws Exception {
+			http.authorizeRequests()
+			.antMatchers("/basicprofile/all").access("#oauth2.hasScope('profile.basicprofile.all')")
+			.antMatchers("/basicprofile/me").access("#oauth2.hasScope('profile.basicprofile.me')")
+			.antMatchers("/accountprofile/all").access("#oauth2.hasScope('profile.accountprofile.all')")
+			.antMatchers("/accountprofile/me").access("#oauth2.hasScope('profile.accountprofile.me')")
+			.and().csrf().disable();
+		}
+		public void configure(ResourceServerSecurityConfigurer resources) throws Exception { resources.resourceId(null);}
+	}
+
 }
