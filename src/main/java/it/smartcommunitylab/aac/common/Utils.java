@@ -91,4 +91,13 @@ public class Utils {
 		res.getResourceMapping().addAll(JsonUtils.toObjectList(s.getResourceMappings(), ResourceMapping.class));
 		return res;
 	} 
+	
+	/**
+	 * URL for authentication filters of identity providers
+	 * @param provider
+	 * @return
+	 */
+	public static String filterRedirectURL(String provider) {
+		return "/auth/"+provider+"-oauth/callback";
+	}
 }

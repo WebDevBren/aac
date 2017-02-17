@@ -20,16 +20,6 @@
  */
 package it.smartcommunitylab.aac.manager;
 
-import it.smartcommunitylab.aac.authority.AuthorityHandler;
-import it.smartcommunitylab.aac.authority.AuthorityHandlerContainer;
-import it.smartcommunitylab.aac.jaxbmodel.Authorities;
-import it.smartcommunitylab.aac.jaxbmodel.AuthorityMapping;
-import it.smartcommunitylab.aac.jaxbmodel.AuthorityMatching;
-import it.smartcommunitylab.aac.jaxbmodel.Match;
-import it.smartcommunitylab.aac.model.Attribute;
-import it.smartcommunitylab.aac.model.Authority;
-import it.smartcommunitylab.aac.repository.AuthorityRepository;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -47,10 +37,20 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+
+import it.smartcommunitylab.aac.authority.AuthorityHandler;
+import it.smartcommunitylab.aac.authority.AuthorityHandlerContainer;
+import it.smartcommunitylab.aac.common.Utils;
+import it.smartcommunitylab.aac.jaxbmodel.Authorities;
+import it.smartcommunitylab.aac.jaxbmodel.AuthorityMapping;
+import it.smartcommunitylab.aac.jaxbmodel.AuthorityMatching;
+import it.smartcommunitylab.aac.jaxbmodel.Match;
+import it.smartcommunitylab.aac.model.Attribute;
+import it.smartcommunitylab.aac.model.Authority;
+import it.smartcommunitylab.aac.repository.AuthorityRepository;
 
 /**
  * This class manages all operations on attributes.
@@ -175,7 +175,7 @@ public class AttributesAdapter {
 		Map<String, String> map = new HashMap<String, String>();
 		for (AuthorityMapping mapping : authorities.values()) {
 			if (mapping.isWeb()) {
-				map.put(mapping.getName(), mapping.getUrl());
+				map.put(mapping.getName(), Utils.filterRedirectURL(mapping.getName()));
 			}
 		}
 		return map;

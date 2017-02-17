@@ -28,6 +28,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.filter.CompositeFilter;
 
+import it.smartcommunitylab.aac.common.Utils;
 import it.smartcommunitylab.aac.config.SecurityConfig.OAuthProviders.ClientResources;
 import it.smartcommunitylab.aac.oauth.ExtOAuth2SuccessHandler;
 
@@ -63,7 +64,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		List<ClientResources> providers = oauthProviders().getProviders();
 		for (ClientResources client : providers) {
 			String id = client.getProvider();
-			filters.add(ssoFilter(client, "/auth/"+id+"-oauth/callback", "/eauth/"+id));
+			filters.add(ssoFilter(client, Utils.filterRedirectURL(id), "/eauth/"+id));
 		}
 		filter.setFilters(filters);
 		return filter;
