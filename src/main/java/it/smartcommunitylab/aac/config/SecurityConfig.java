@@ -93,8 +93,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Override
 	public void configure(HttpSecurity http) throws Exception {
-		http.csrf().disable();
-//
 //		http.antMatcher("/**").authorizeRequests().antMatchers("/", "/login**", "/webjars/**").permitAll().anyRequest()
 //		.authenticated().and()
 //		.authorizeRequests().antMatchers("/dev/**","/oauth/**").fullyAuthenticated().and()
@@ -116,8 +114,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				.and().logout()
 					.logoutSuccessUrl("/").permitAll()
 				.and().csrf()
-					.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-				.and()
+					.disable()
 					.addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);
 	}
 	
