@@ -1,6 +1,7 @@
 package it.smartcommunitylab.aac.config;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.Filter;
@@ -25,7 +26,8 @@ import org.springframework.security.oauth2.config.annotation.configurers.ClientD
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
+import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfiguration;
+import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
@@ -157,18 +159,29 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		}		
 	}
 	
-	@Configuration
-	@EnableResourceServer
-	protected static class BasicMeResourceServerConfiguration extends ResourceServerConfigurerAdapter {
-		public void configure(HttpSecurity http) throws Exception {
-			http.authorizeRequests()
-			.antMatchers("/basicprofile/all").access("#oauth2.hasScope('profile.basicprofile.all')")
-			.antMatchers("/basicprofile/me").access("#oauth2.hasScope('profile.basicprofile.me')")
-			.antMatchers("/accountprofile/all").access("#oauth2.hasScope('profile.accountprofile.all')")
-			.antMatchers("/accountprofile/me").access("#oauth2.hasScope('profile.accountprofile.me')")
-			.and().csrf().disable();
-		}
-		public void configure(ResourceServerSecurityConfigurer resources) throws Exception { resources.resourceId(null);}
-	}
+	@Bean
+	protected ResourceServerConfiguration profileResources() {
+		ResourceServerConfiguration resource = new ResourceServerConfiguration() {	
+			public void setConfigurers(List<ResourceServerConfigurer> configurers) {
+				super.setConfigurers(configurers);
+			}
+		};
+		resource.setConfigurers(Arrays.<ResourceServerConfigurer> asList(new ResourceServerConfigurerAdapter() {
+			public void configure(ResourceServerSecurityConfigurer resources) throws Exception { resources.resourceId(null); }
+			public void configure(HttpSecurity http) throws Exception {
+				http
+				.antMatcher("/*profile/**")
+				.authorizeRequests()
+				.antMatchers("/basicprofile/all").access("#oauth2.hasScope('profile.basicprofile.all')")
+				.antMatchers("/basicprofile/me").access("#oauth2.hasScope('profile.basicprofile.me')")
+				.antMatchers("/accountprofile/all").access("#oauth2.hasScope('profile.accountprofile.all')")
+				.antMatchers("/accountprofile/me").access("#oauth2.hasScope('profile.accountprofile.me')")
+				.and().csrf().disable();
+			}
 
+		}));
+		resource.setOrder(4);
+		return resource;
+	}
+	
 }
