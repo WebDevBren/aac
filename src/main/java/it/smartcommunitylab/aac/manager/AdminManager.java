@@ -36,7 +36,7 @@ import it.smartcommunitylab.aac.model.Identity;
 public class AdminManager {
 
 	@Autowired
-	@Value("${ac.admin.file}")
+	@Value("${security.adminfile}")
 	private Resource adminFile;
 	
 	public enum ROLE {admin, user, developer, manager};

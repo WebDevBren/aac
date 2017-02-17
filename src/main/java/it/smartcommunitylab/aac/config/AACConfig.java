@@ -1,21 +1,5 @@
 package it.smartcommunitylab.aac.config;
 
-import it.smartcommunitylab.aac.authority.AnonymousAuthorityHandler;
-import it.smartcommunitylab.aac.authority.AuthorityHandler;
-import it.smartcommunitylab.aac.authority.AuthorityHandlerContainer;
-import it.smartcommunitylab.aac.authority.DefaultAuthorityHandler;
-import it.smartcommunitylab.aac.authority.FBAuthorityHandler;
-import it.smartcommunitylab.aac.authority.GoogleAuthorityHandler;
-import it.smartcommunitylab.aac.model.ClientDetailsRowMapper;
-import it.smartcommunitylab.aac.oauth.AutoJdbcAuthorizationCodeServices;
-import it.smartcommunitylab.aac.oauth.AutoJdbcTokenStore;
-import it.smartcommunitylab.aac.oauth.CachedResourceStorage;
-import it.smartcommunitylab.aac.oauth.ClientCredentialsFilter;
-import it.smartcommunitylab.aac.oauth.IsolationSupportHibernateJpaDialect;
-import it.smartcommunitylab.aac.oauth.NonRemovingTokenServices;
-import it.smartcommunitylab.aac.oauth.UserApprovalHandler;
-import it.smartcommunitylab.aac.oauth.UserDetailsRepo;
-
 import java.beans.PropertyVetoException;
 import java.util.List;
 import java.util.Locale;
@@ -35,7 +19,6 @@ import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.oauth2.provider.OAuth2RequestFactory;
 import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
 import org.springframework.security.oauth2.provider.request.DefaultOAuth2RequestFactory;
@@ -58,9 +41,20 @@ import com.google.api.client.util.Lists;
 import com.google.common.collect.Maps;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
-import eu.trentorise.smartcampus.resourceprovider.filter.ResourceAuthenticationManager;
-import eu.trentorise.smartcampus.resourceprovider.jdbc.JdbcServices;
-//import org.springframework.security.oauth2.provider.client.JdbcClientDetailsService;
+import it.smartcommunitylab.aac.authority.AnonymousAuthorityHandler;
+import it.smartcommunitylab.aac.authority.AuthorityHandler;
+import it.smartcommunitylab.aac.authority.AuthorityHandlerContainer;
+import it.smartcommunitylab.aac.authority.DefaultAuthorityHandler;
+import it.smartcommunitylab.aac.authority.FBAuthorityHandler;
+import it.smartcommunitylab.aac.authority.GoogleAuthorityHandler;
+import it.smartcommunitylab.aac.model.ClientDetailsRowMapper;
+import it.smartcommunitylab.aac.oauth.AutoJdbcAuthorizationCodeServices;
+import it.smartcommunitylab.aac.oauth.AutoJdbcTokenStore;
+import it.smartcommunitylab.aac.oauth.CachedResourceStorage;
+import it.smartcommunitylab.aac.oauth.IsolationSupportHibernateJpaDialect;
+import it.smartcommunitylab.aac.oauth.NonRemovingTokenServices;
+import it.smartcommunitylab.aac.oauth.UserApprovalHandler;
+import it.smartcommunitylab.aac.oauth.UserDetailsRepo;
 
 @Configuration 
 @EntityScan({"it.smartcommunitylab.aac.model", "it.smartcommunitylab.aac.profile.model"})
@@ -101,25 +95,25 @@ public class AACConfig extends WebMvcConfigurerAdapter {
 	    return new RequestContextListener();
 	} 	
 	
-	@Bean
-	public ClientCredentialsFilter getClientCredentialsFilter() throws PropertyVetoException {
-		ClientCredentialsFilter ccf = new ClientCredentialsFilter("/internal/register/rest");
-		ccf.setAuthenticationManager(getAuthenticationManager());
-		return ccf;
-	}	
+//	@Bean
+//	public ClientCredentialsFilter getClientCredentialsFilter() throws PropertyVetoException {
+//		ClientCredentialsFilter ccf = new ClientCredentialsFilter("/internal/register/rest");
+//		ccf.setAuthenticationManager(getAuthenticationManager());
+//		return ccf;
+//	}	
 
 	@Bean
 	public UserDetailsRepo getUserDetailsService() {
 		return new UserDetailsRepo();
 	}
 	
-	@Bean("authenticationManager")
-	public AuthenticationManager getAuthenticationManager() throws PropertyVetoException {
-		ResourceAuthenticationManager bean = new ResourceAuthenticationManager();
-		bean.setTokenStore(getTokenStore());
-		bean.setAuthServices(getJdbcServices());
-		return bean;
-	}
+//	@Bean("authenticationManager")
+//	public AuthenticationManager getAuthenticationManager() throws PropertyVetoException {
+//		ResourceAuthenticationManager bean = new ResourceAuthenticationManager();
+//		bean.setTokenStore(getTokenStore());
+//		bean.setAuthServices(getJdbcServices());
+//		return bean;
+//	}
 	
 	@Bean
 	public JdbcClientDetailsService getClientDetails() throws PropertyVetoException {
@@ -133,10 +127,10 @@ public class AACConfig extends WebMvcConfigurerAdapter {
 		return new ClientDetailsRowMapper();
 	}
 	
-	@Bean
-	public JdbcServices getJdbcServices() throws PropertyVetoException {
-		return new JdbcServices(getDataSource());
-	}
+//	@Bean
+//	public JdbcServices getJdbcServices() throws PropertyVetoException {
+//		return new JdbcServices(getDataSource());
+//	}
 	
 	@Bean 
 	public AutoJdbcTokenStore getTokenStore() throws PropertyVetoException {
@@ -189,7 +183,7 @@ public class AACConfig extends WebMvcConfigurerAdapter {
 	public AuthorityHandlerContainer getAuthorityHandlerContainer() {
 		Map<String, AuthorityHandler> map = Maps.newTreeMap();
 		
-		GoogleAuthorityHandler gh = new GoogleAuthorityHandler(env.getProperty("google.clientIds"));
+		GoogleAuthorityHandler gh = new GoogleAuthorityHandler();
 		map.put("googlelocal", gh);
 		FBAuthorityHandler fh = new FBAuthorityHandler();
 		map.put("facebooklocal", fh);

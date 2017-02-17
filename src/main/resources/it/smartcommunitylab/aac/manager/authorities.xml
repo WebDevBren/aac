@@ -27,20 +27,19 @@
 		<identifyingAttributes>idada</identifyingAttributes>
 	</authorityMapping>
  -->	
- <authorityMapping name="fbk" url="fbk">
-		<attributes alias="it.smartcommunitylab.aac.givenname">givenName</attributes>
-		<attributes alias="it.smartcommunitylab.aac.surname">sn</attributes>
-		<identifyingAttributes>eppn</identifyingAttributes>
-	</authorityMapping>
-<!--   <authorityMapping name="google" url="google" useParams="true" public="true"> -->
-<!--       <attributes alias="it.smartcommunitylab.aac.givenname">openid.ext1.value.name</attributes> -->
-<!--       <attributes alias="it.smartcommunitylab.aac.surname">openid.ext1.value.surname</attributes> -->
-<!--       <identifyingAttributes>openid.ext1.value.email</identifyingAttributes> -->
-<!--   </authorityMapping> -->
-  <authorityMapping name="google" url="google" public="true" useParams="true">
+<!--   <authorityMapping name="google" url="google" public="true" useParams="true">
       <attributes alias="it.smartcommunitylab.aac.givenname">OIDC_CLAIM_given_name</attributes>
       <attributes alias="it.smartcommunitylab.aac.surname">OIDC_CLAIM_family_name</attributes>
       <identifyingAttributes>OIDC_CLAIM_email</identifyingAttributes>
+  </authorityMapping>
+ -->  
+  <authorityMapping name="google" url="google" public="true" useParams="true">
+      <attributes alias="it.smartcommunitylab.aac.givenname">given_name</attributes>
+      <attributes alias="it.smartcommunitylab.aac.surname">family_name</attributes>
+      <attributes>email</attributes>
+      <attributes>name</attributes>
+      <attributes>link</attributes>
+      <identifyingAttributes>email</identifyingAttributes>
   </authorityMapping>
   <authorityMapping name="facebook" url="facebook" public="true" useParams="true">
       <attributes alias="it.smartcommunitylab.aac.givenname">first_name</attributes>
@@ -67,9 +66,6 @@
       <attributes alias="it.smartcommunitylab.aac.surname">surname</attributes>
       <attributes>email</attributes>
       <identifyingAttributes>email</identifyingAttributes>
-  </authorityMapping>
-  <authorityMapping name="anonymous" url="anonymous" public="true" web="false">
-      <identifyingAttributes>externalId</identifyingAttributes>
   </authorityMapping>
   <authorityMapping name="adc" url="adc" public="false" web="true" >
       <attributes alias="it.smartcommunitylab.aac.givenname">pat_attribute_nome</attributes>
@@ -111,29 +107,5 @@
       <authority name="facebook" attribute="id"/>
       <authority name="facebooklocal" attribute="id"/>
   </authorityMatching>
-  
-<!--   <authorityMatching>
-      <authority name="google" attribute="OIDC_CLAIM_email"/>
-      <authority name="googlelocal" attribute="email"/>
-  </authorityMatching>
-  <authorityMatching>
-      <authority name="google" attribute="OIDC_CLAIM_email"/>
-      <authority name="facebook" attribute="email"/>
-  </authorityMatching>
-  <authorityMatching>
-      <authority name="facebook" attribute="email"/>
-      <authority name="googlelocal" attribute="email"/>
-  </authorityMatching>
-  <authorityMatching>
-      <authority name="facebook" attribute="fb_id"/>
-      <authority name="facebooklocal" attribute="fb_id"/>
-  </authorityMatching>
-  <authorityMatching>
-      <authority name="facebooklocal" attribute="email"/>
-      <authority name="googlelocal" attribute="email"/>
-  </authorityMatching>
-  <authorityMatching>
-      <authority name="facebooklocal" attribute="email"/>
-      <authority name="google" attribute="OIDC_CLAIM_email"/>
-  </authorityMatching>
+
  --></authorities>

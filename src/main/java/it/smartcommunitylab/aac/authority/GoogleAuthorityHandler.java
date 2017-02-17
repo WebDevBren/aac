@@ -16,12 +16,8 @@
 
 package it.smartcommunitylab.aac.authority;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -46,15 +42,6 @@ public class GoogleAuthorityHandler implements AuthorityHandler {
 
 	private static final String TOKEN_PARAM = "token";
 	
-	private Set<String> googleClientIds = null;
-	
-	public GoogleAuthorityHandler(String googleClientIdsString) {
-		super();
-		if (googleClientIdsString == null) googleClientIds = Collections.emptySet();
-		String[] array = googleClientIdsString.split(",");
-		this.googleClientIds = new HashSet<String>(Arrays.asList(array));
-	}
-
 
 	@Override
 	public Map<String, String> extractAttributes(HttpServletRequest request, Map<String,String> map, AuthorityMapping mapping) {

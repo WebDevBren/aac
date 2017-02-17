@@ -15,14 +15,6 @@
  */
 package it.smartcommunitylab.aac.manager;
 
-import it.smartcommunitylab.aac.Config;
-import it.smartcommunitylab.aac.model.Attribute;
-import it.smartcommunitylab.aac.model.Authority;
-import it.smartcommunitylab.aac.model.User;
-import it.smartcommunitylab.aac.repository.AttributeRepository;
-import it.smartcommunitylab.aac.repository.AuthorityRepository;
-import it.smartcommunitylab.aac.repository.UserRepository;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -35,9 +27,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.JAXBException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import it.smartcommunitylab.aac.Config;
+import it.smartcommunitylab.aac.model.Attribute;
+import it.smartcommunitylab.aac.model.Authority;
+import it.smartcommunitylab.aac.model.User;
+import it.smartcommunitylab.aac.repository.AttributeRepository;
+import it.smartcommunitylab.aac.repository.AuthorityRepository;
+import it.smartcommunitylab.aac.repository.UserRepository;
 
 /**
  * This class manages operations of the service
@@ -47,9 +46,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ProviderServiceAdapter {
 
-	@Value("${mode.testing}")
-	private boolean testMode;
-
 	@Autowired
 	private AttributesAdapter attrAdapter;
 	@Autowired
@@ -58,14 +54,11 @@ public class ProviderServiceAdapter {
 	private UserRepository userRepository;
 	@Autowired
 	private AttributeRepository attributeRepository;
-	@Autowired
-	private SecurityAdapter secAdapter;
 	
 	
 	@PostConstruct
 	private void init() throws JAXBException, IOException {
 		attrAdapter.init();
-		secAdapter.init();
 	}
 
 	/**
@@ -103,11 +96,6 @@ public class ProviderServiceAdapter {
 		// fillin attribute list
 		list.clear();
 		populateAttributes(auth, attributes, list, users.isEmpty() ? null : users.get(0).getAttributeEntities());
-
-		// check the access rights for the user with respect to the whitelist
-		if (!secAdapter.access(auth.getName(), new ArrayList<String>(attributes.keySet()), attributes)) {
-			throw new SecurityException("Access denied to user");
-		}
 
 		User user = null;
 		if (users.isEmpty()) {

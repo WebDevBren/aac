@@ -17,7 +17,6 @@ package it.smartcommunitylab.aac.controller;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,7 +31,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -68,10 +66,7 @@ public class AuthController extends AbstractController {
 	private ProviderServiceAdapter providerServiceAdapter;
 	@Autowired
 	private AttributesAdapter attributesAdapter;
-	@Value("${mode.testing}")
-	private boolean testMode;
-	@Value("${mode.collectInfo:false}")
-	private boolean collectInfoMode;
+
 	@Autowired
 	private ClientDetailsManager clientDetailsAdapter;
 
@@ -110,42 +105,6 @@ public class AuthController extends AbstractController {
 				.getWebAuthorityUrls();
 		model.put("authorities", authorities);
 		String target = prepareRedirect(req, "/dev");
-		req.getSession().setAttribute("redirect", target);
-		return new ModelAndView("authorities", model);
-	}
-
-	/**
-	 * Redirect to the login type selection page.
-	 * 
-	 * @param req
-	 * @return
-	 * @throws Exception
-	 */
-	@RequestMapping("/eauth/sso")
-	public ModelAndView sso(HttpServletRequest req) throws Exception {
-		Map<String, Object> model = new HashMap<String, Object>();
-		Map<String, String> authorities = attributesAdapter
-				.getWebAuthorityUrls();
-		model.put("authorities", authorities);
-		String target = prepareRedirect(req, "/sso");
-		req.getSession().setAttribute("redirect", target);
-		return new ModelAndView("authorities", model);
-	}
-
-	/**
-	 * Redirect to the login type selection page.
-	 * 
-	 * @param req
-	 * @return
-	 * @throws Exception
-	 */
-	@RequestMapping("/eauth/cas")
-	public ModelAndView cas(HttpServletRequest req) throws Exception {
-		Map<String, Object> model = new HashMap<String, Object>();
-		Map<String, String> authorities = attributesAdapter
-				.getWebAuthorityUrls();
-		model.put("authorities", authorities);
-		String target = prepareRedirect(req, "/cas/loginsuccess");
 		req.getSession().setAttribute("redirect", target);
 		return new ModelAndView("authorities", model);
 	}
@@ -292,53 +251,39 @@ public class AuthController extends AbstractController {
 			}
 		}
 
-		// HOOK for testing
-		if (testMode && target == null) {
-			target = "/eauth/"
-					+ authorityUrl
-					+ "?target="
-					+ URLEncoder.encode(nTarget, "UTF8")
-					+ "&OIDC_CLAIM_email=my@mail&OIDC_CLAIM_given_name=name&OIDC_CLAIM_family_name=surname";
-		} else {
+		target = nTarget;
+		
+		Authentication old = SecurityContextHolder.getContext().getAuthentication();
+		if (old != null && old instanceof UsernamePasswordAuthenticationToken) {
+			if (!authorityUrl.equals(old.getDetails())) {
+	            new SecurityContextLogoutHandler().logout(req, res, old);
+		        SecurityContextHolder.getContext().setAuthentication(null);
 
-			if (!testMode && nTarget != null) {
-				target = nTarget;
+				req.getSession().setAttribute("redirect", target);
+				req.getSession().setAttribute("client_id", clientId);
+		        
+				return new ModelAndView("redirect:/eauth/"+authorityUrl);
 			}
-			
-			Authentication old = SecurityContextHolder.getContext().getAuthentication();
-			if (old != null && old instanceof UsernamePasswordAuthenticationToken) {
-				if (!authorityUrl.equals(old.getDetails())) {
-		            new SecurityContextLogoutHandler().logout(req, res, old);
-			        SecurityContextHolder.getContext().setAuthentication(null);
-
-					req.getSession().setAttribute("redirect", target);
-					req.getSession().setAttribute("client_id", clientId);
-			        
-					return new ModelAndView("redirect:/eauth/"+authorityUrl);
-//					return new ModelAndView("redirect:/logout");
-				}
-			}
-
-			List<NameValuePair> pairs = URLEncodedUtils.parse(
-					URI.create(nTarget), "UTF-8");
-
-			it.smartcommunitylab.aac.model.User userEntity = null;
-			if (old != null && old instanceof UsernamePasswordAuthenticationToken) {
-				String userId = old.getName();
-				userEntity = userRepository.findOne(Long.parseLong(userId));
-			} else {
-				userEntity = providerServiceAdapter.updateUser(authorityUrl, toMap(pairs), req);
-			}
-
-			UserDetails user = new User(userEntity.getId().toString(), "", list);
-
-			AbstractAuthenticationToken a = new UsernamePasswordAuthenticationToken(
-					user, null, list);
-			a.setDetails(authorityUrl);
-
-			SecurityContextHolder.getContext().setAuthentication(a);
-
 		}
+
+		List<NameValuePair> pairs = URLEncodedUtils.parse(URI.create(nTarget), "UTF-8");
+
+		it.smartcommunitylab.aac.model.User userEntity = null;
+		if (old != null && old instanceof UsernamePasswordAuthenticationToken) {
+			String userId = old.getName();
+			userEntity = userRepository.findOne(Long.parseLong(userId));
+		} else {
+			userEntity = providerServiceAdapter.updateUser(authorityUrl, toMap(pairs), req);
+		}
+
+		UserDetails user = new User(userEntity.getId().toString(), "", list);
+
+		AbstractAuthenticationToken a = new UsernamePasswordAuthenticationToken(
+				user, null, list);
+		a.setDetails(authorityUrl);
+
+		SecurityContextHolder.getContext().setAuthentication(a);
+
 		return new ModelAndView("redirect:" + target);
 	}
 

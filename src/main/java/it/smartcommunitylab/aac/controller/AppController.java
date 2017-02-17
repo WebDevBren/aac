@@ -68,7 +68,7 @@ public class AppController extends AbstractController {
 	private AttributesAdapter attributesAdapter;
 	@Autowired
 	private AdminManager adminManager;
-	@Value("${mode.restricted}")
+	@Value("${security.restricted}")
 	private boolean accessMode;
 
 	/**

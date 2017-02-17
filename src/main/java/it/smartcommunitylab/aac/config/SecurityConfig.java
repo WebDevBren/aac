@@ -24,10 +24,12 @@ import org.springframework.security.oauth2.client.token.grant.code.Authorization
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.filter.CompositeFilter;
+
+import it.smartcommunitylab.aac.config.SecurityConfig.OAuthProviders.ClientResources;
+import it.smartcommunitylab.aac.oauth.ExtOAuth2SuccessHandler;
 
 @Configuration 
 @EnableOAuth2Client
@@ -38,9 +40,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	@Value("${application.url}")
 	private String applicationURL;
 
-	@Value("${mode.testing}")
-	private boolean testMode;		
-	
 	@Autowired
 	OAuth2ClientContext oauth2ClientContext;
 
@@ -51,25 +50,21 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		registration.setOrder(-100);
 		return registration;
 	}
-	
-	@Bean
-	@ConfigurationProperties("google")
-	public ClientResources google() {
-		return new ClientResources();
-	}
 
 	@Bean
-	@ConfigurationProperties("facebook")
-	public ClientResources facebook() {
-		return new ClientResources();
-	}	
+	@ConfigurationProperties("oauth-providers")
+	public OAuthProviders oauthProviders(){
+		return new OAuthProviders();
+	}
 	
 	private Filter ssoFilter() {
 		CompositeFilter filter = new CompositeFilter();
 		List<Filter> filters = new ArrayList<>();
-		filters.add(ssoFilter(facebook(), "/auth/facebook-oauth/callback", "/eauth/facebook"));
-		filters.add(ssoFilter(google(), "/auth/google-oauth/callback", "/eauth/google"));
-//		filters.add(new GoogleProviderFilter(applicationURL, testMode));
+		List<ClientResources> providers = oauthProviders().getProviders();
+		for (ClientResources client : providers) {
+			String id = client.getProvider();
+			filters.add(ssoFilter(client, "/auth/"+id+"-oauth/callback", "/eauth/"+id));
+		}
 		filter.setFilters(filters);
 		return filter;
 	}	
@@ -78,8 +73,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		OAuth2ClientAuthenticationProcessingFilter filter = new OAuth2ClientAuthenticationProcessingFilter(
 				path);
 		
-		filter.setAuthenticationSuccessHandler(new SimpleUrlAuthenticationSuccessHandler(target));
-		
+		filter.setAuthenticationSuccessHandler(new ExtOAuth2SuccessHandler(target));
 		
 		OAuth2RestTemplate template = new OAuth2RestTemplate(client.getClient(), oauth2ClientContext);
 		filter.setRestTemplate(template);
@@ -91,22 +85,44 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	}	
 	
 	
-	class ClientResources {
-
+	static public class OAuthProviders {
 		@NestedConfigurationProperty
-		private AuthorizationCodeResourceDetails client = new AuthorizationCodeResourceDetails();
+		private List<ClientResources> providers;
 
-		@NestedConfigurationProperty
-		private ResourceServerProperties resource = new ResourceServerProperties();
-
-		public AuthorizationCodeResourceDetails getClient() {
-			return client;
+		public List<ClientResources> getProviders() {
+			return providers;
 		}
 
-		public ResourceServerProperties getResource() {
-			return resource;
+		public void setProviders(List<ClientResources> providers) {
+			this.providers = providers;
 		}
-	}	
+		public static class ClientResources {
+
+			private String provider;
+			
+			@NestedConfigurationProperty
+			private AuthorizationCodeResourceDetails client = new AuthorizationCodeResourceDetails();
+
+			@NestedConfigurationProperty
+			private ResourceServerProperties resource = new ResourceServerProperties();
+
+			public String getProvider() {
+				return provider;
+			}
+
+			public void setProvider(String provider) {
+				this.provider = provider;
+			}
+
+			public AuthorizationCodeResourceDetails getClient() {
+				return client;
+			}
+
+			public ResourceServerProperties getResource() {
+				return resource;
+			}
+		}	
+	}
 	
 	
 	@Override
@@ -135,7 +151,5 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		
 		
 	}
-	
-	
 	
 }
