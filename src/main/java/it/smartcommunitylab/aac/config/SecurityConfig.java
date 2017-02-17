@@ -30,6 +30,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.R
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
+import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.token.TokenStore;
@@ -38,6 +39,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.web.filter.CompositeFilter;
 
 import it.smartcommunitylab.aac.common.Utils;
+import it.smartcommunitylab.aac.oauth.ContextExtender;
 import it.smartcommunitylab.aac.oauth.ExtOAuth2SuccessHandler;
 import it.smartcommunitylab.aac.oauth.OAuthProviders;
 import it.smartcommunitylab.aac.oauth.OAuthProviders.ClientResources;
@@ -96,20 +98,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	
 	@Override
-	public void configure(HttpSecurity http) throws Exception {
-//		http.antMatcher("/**").authorizeRequests().antMatchers("/", "/login**", "/webjars/**").permitAll().anyRequest()
-//		.authenticated().and()
-//		.authorizeRequests().antMatchers("/dev/**","/oauth/**").fullyAuthenticated().and()
-//		.formLogin().loginPage("/eauth/dev").permitAll().and().logout().permitAll();
-		
-
-//		http.antMatcher("/**").authorizeRequests().antMatchers("/", "/dev/**").permitAll().anyRequest()
-//		.authenticated().and().exceptionHandling()
-//		.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/dev")).and().logout()
-//		.logoutSuccessUrl("/").permitAll().and().csrf()
-//		.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and()
-//		.addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);		
-		
+	public void configure(HttpSecurity http) throws Exception {		
 		http
 			.authorizeRequests()
 				.antMatchers("/dev/**","/oauth/**").authenticated()
@@ -129,6 +118,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		return super.authenticationManagerBean();
 	}
 
+	@Bean
+	protected ContextExtender contextExtender() {
+		return new ContextExtender();
+	}
+	
 	@Configuration
 	@EnableAuthorizationServer
 	protected static class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
@@ -157,7 +151,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			endpoints.tokenStore(tokenStore).userApprovalHandler(userApprovalHandler)
 					.authenticationManager(authenticationManager);
 		}		
-	}
+        @Override
+        public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
+            oauthServer.allowFormAuthenticationForClients();
+        }
+    }
 	
 	@Bean
 	protected ResourceServerConfiguration profileResources() {

@@ -22,14 +22,12 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.security.oauth2.provider.endpoint.AuthorizationEndpoint;
-import org.springframework.stereotype.Component;
 
 /**
  * Context extension to customize the OAuth2 authorization endpoint
  * @author raman
  *
  */
-@Component
 public class ContextExtender implements ApplicationContextAware {
 
 	@Override

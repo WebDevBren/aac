@@ -60,7 +60,6 @@ import it.smartcommunitylab.aac.oauth.UserDetailsRepo;
 @EntityScan({"it.smartcommunitylab.aac.model", "it.smartcommunitylab.aac.profile.model"})
 @EnableWebMvc
 @ComponentScan("it.smartcommunitylab.aac")
-//@PropertySource("classpath:commoncore.properties")
 @EnableTransactionManagement
 @EnableAutoConfiguration
 @EnableSpringDataWebSupport
@@ -73,23 +72,6 @@ public class AACConfig extends WebMvcConfigurerAdapter {
 	
 	@Autowired
 	private Environment env;
-	
-//	@Bean
-//	public TemplateEngine getTemplateEngine() {
-//		TemplateEngine bean = new TemplateEngine();
-//		ClassLoaderTemplateResolver tr = new ClassLoaderTemplateResolver(); 
-//		tr.setPrefix("/templates/");
-//		tr.setSuffix(".html");
-//		tr.setCharacterEncoding("UTF-8");
-//		tr.setTemplateMode("HTML5");
-//		bean.setTemplateResolver(tr);
-//		return bean;
-//	}
-	
-//	@Bean
-//	public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
-//		return new PropertySourcesPlaceholderConfigurer();
-//	}	
 	
 	@Bean public RequestContextListener requestContextListener(){
 	    return new RequestContextListener();
@@ -106,14 +88,6 @@ public class AACConfig extends WebMvcConfigurerAdapter {
 	public UserDetailsRepo getUserDetailsService() {
 		return new UserDetailsRepo();
 	}
-	
-//	@Bean("authenticationManager")
-//	public AuthenticationManager getAuthenticationManager() throws PropertyVetoException {
-//		ResourceAuthenticationManager bean = new ResourceAuthenticationManager();
-//		bean.setTokenStore(getTokenStore());
-//		bean.setAuthServices(getJdbcServices());
-//		return bean;
-//	}
 	
 	@Bean
 	public JdbcClientDetailsService getClientDetails() throws PropertyVetoException {
