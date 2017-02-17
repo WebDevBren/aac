@@ -34,6 +34,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.provider.ClientDetails;
+import org.springframework.util.StringUtils;
 
 /**
  * DB entity storing the client app information
@@ -81,6 +82,9 @@ public class ClientDetailsEntity implements ClientDetails {
 
 	@Column(name = "additional_information",columnDefinition="LONGTEXT")
 	private String additionalInformation;
+
+	@Column(name = "autoapprove")
+	private String autoapprove;
 
 	@Id
 	@GeneratedValue
@@ -323,7 +327,6 @@ public class ClientDetailsEntity implements ClientDetails {
 
 	@Override
 	public boolean isAutoApprove(String scope) {
-		// TODO Auto-generated method stub
-		return false;
+		return "true".equals(autoapprove) || (StringUtils.hasText(autoapprove) && StringUtils.commaDelimitedListToSet(autoapprove).contains(scope));
 	}
 }

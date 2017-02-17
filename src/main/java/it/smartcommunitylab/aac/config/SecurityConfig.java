@@ -4,38 +4,43 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.Filter;
+import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilter;
-import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
+import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
+import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
+import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
+import org.springframework.security.oauth2.provider.ClientDetailsService;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.filter.CompositeFilter;
 
 import it.smartcommunitylab.aac.common.Utils;
-import it.smartcommunitylab.aac.config.SecurityConfig.OAuthProviders.ClientResources;
 import it.smartcommunitylab.aac.oauth.ExtOAuth2SuccessHandler;
+import it.smartcommunitylab.aac.oauth.OAuthProviders;
+import it.smartcommunitylab.aac.oauth.OAuthProviders.ClientResources;
+import it.smartcommunitylab.aac.oauth.UserApprovalHandler;
 
 @Configuration 
 @EnableOAuth2Client
-//@EnableOAuth2Sso
-@EnableAuthorizationServer
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Value("${application.url}")
@@ -86,49 +91,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	}	
 	
 	
-	static public class OAuthProviders {
-		@NestedConfigurationProperty
-		private List<ClientResources> providers;
-
-		public List<ClientResources> getProviders() {
-			return providers;
-		}
-
-		public void setProviders(List<ClientResources> providers) {
-			this.providers = providers;
-		}
-		public static class ClientResources {
-
-			private String provider;
-			
-			@NestedConfigurationProperty
-			private AuthorizationCodeResourceDetails client = new AuthorizationCodeResourceDetails();
-
-			@NestedConfigurationProperty
-			private ResourceServerProperties resource = new ResourceServerProperties();
-
-			public String getProvider() {
-				return provider;
-			}
-
-			public void setProvider(String provider) {
-				this.provider = provider;
-			}
-
-			public AuthorizationCodeResourceDetails getClient() {
-				return client;
-			}
-
-			public ResourceServerProperties getResource() {
-				return resource;
-			}
-		}	
-	}
-	
-	
 	@Override
 	public void configure(HttpSecurity http) throws Exception {
-//		http.csrf().disable();
+		http.csrf().disable();
 //
 //		http.antMatcher("/**").authorizeRequests().antMatchers("/", "/login**", "/webjars/**").permitAll().anyRequest()
 //		.authenticated().and()
@@ -143,14 +108,53 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //		.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and()
 //		.addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);		
 		
-		http.authorizeRequests().antMatchers("/dev/**","/oauth/**").fullyAuthenticated().and().exceptionHandling()
-		.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/eauth/dev")).and().logout()
-		.logoutSuccessUrl("/").permitAll().and().csrf()
-		.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).and()
-		.addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);
-	
-		
-		
+		http
+			.authorizeRequests()
+				.antMatchers("/dev/**","/oauth/**").authenticated()
+				.and().exceptionHandling()
+					.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/eauth/dev"))
+				.and().logout()
+					.logoutSuccessUrl("/").permitAll()
+				.and().csrf()
+					.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+				.and()
+					.addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);
 	}
 	
+	
+	@Override
+	@Bean("authenticationManagerBean")
+	public AuthenticationManager authenticationManagerBean() throws Exception {
+		return super.authenticationManagerBean();
+	}
+
+	@Configuration
+	@EnableAuthorizationServer
+	protected static class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
+		@Autowired
+		private TokenStore tokenStore;
+
+		@Autowired
+		private UserApprovalHandler userApprovalHandler;
+
+		@Autowired
+		@Qualifier("authenticationManagerBean")
+		private AuthenticationManager authenticationManager;
+
+		@Autowired
+		private DataSource dataSource;
+		@Autowired
+		private ClientDetailsService clientDetailsService;
+		
+		@Override
+		public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+			clients.jdbc(dataSource).clients(clientDetailsService);
+		}
+		
+		@Override
+		public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+			endpoints.tokenStore(tokenStore).userApprovalHandler(userApprovalHandler)
+					.authenticationManager(authenticationManager);
+		}		
+	}
 }

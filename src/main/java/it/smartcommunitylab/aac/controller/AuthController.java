@@ -49,6 +49,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
+import it.smartcommunitylab.aac.common.Utils;
 import it.smartcommunitylab.aac.manager.AttributesAdapter;
 import it.smartcommunitylab.aac.manager.ClientDetailsManager;
 import it.smartcommunitylab.aac.manager.ProviderServiceAdapter;
@@ -158,8 +159,8 @@ public class AuthController extends AbstractController {
 		req.getSession().setAttribute("client_id", clientId);
 
 		if (resultAuthorities.size() == 1) {
-			return new ModelAndView("redirect:/eauth/"
-					+ resultAuthorities.keySet().iterator().next());
+			return new ModelAndView("redirect:"
+					+ Utils.filterRedirectURL(resultAuthorities.keySet().iterator().next()));
 		}
 		model.put("authorities", resultAuthorities);
 
@@ -196,7 +197,7 @@ public class AuthController extends AbstractController {
 		req.getSession().setAttribute("redirect", target);
 		req.getSession().setAttribute("client_id", clientId);
 
-		return new ModelAndView("redirect:/eauth/" + authority);
+		return new ModelAndView("redirect:" + Utils.filterRedirectURL(authority));
 	}
 
 	/**
@@ -262,7 +263,7 @@ public class AuthController extends AbstractController {
 				req.getSession().setAttribute("redirect", target);
 				req.getSession().setAttribute("client_id", clientId);
 		        
-				return new ModelAndView("redirect:/eauth/"+authorityUrl);
+				return new ModelAndView("redirect:"+Utils.filterRedirectURL(authorityUrl));
 			}
 		}
 
