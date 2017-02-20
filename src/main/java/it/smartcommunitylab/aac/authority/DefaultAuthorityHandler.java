@@ -32,10 +32,7 @@ import it.smartcommunitylab.aac.jaxbmodel.AuthorityMapping;
  */
 public class DefaultAuthorityHandler implements AuthorityHandler {
 
-	private boolean testMode;
-
-	public DefaultAuthorityHandler(boolean testMode) {
-		this.testMode = testMode;
+	public DefaultAuthorityHandler() {
 	}
 
 	@Override
@@ -43,8 +40,7 @@ public class DefaultAuthorityHandler implements AuthorityHandler {
 			Map<String, String> map, AuthorityMapping mapping) {
 		Map<String, String> attrs = new HashMap<String, String>();
 		for (String key : mapping.getIdentifyingAttributes()) {
-			Object value = readAttribute(request, key, testMode ? true
-					: mapping.isUseParams(), map);
+			Object value = readAttribute(request, key, mapping.isUseParams(), map);
 			if (value != null) {
 				attrs.put(key, value.toString());
 			}
@@ -53,8 +49,7 @@ public class DefaultAuthorityHandler implements AuthorityHandler {
 			// used alias if present to set attribute in map
 			String key = (attribute.getAlias() != null && !attribute.getAlias()
 					.isEmpty()) ? attribute.getAlias() : attribute.getValue();
-			Object value = readAttribute(request, attribute.getValue(),
-					testMode ? true : mapping.isUseParams(), map);
+			Object value = readAttribute(request, attribute.getValue(), mapping.isUseParams(), map);
 			if (value != null) {
 				attrs.put(key, value.toString());
 			}

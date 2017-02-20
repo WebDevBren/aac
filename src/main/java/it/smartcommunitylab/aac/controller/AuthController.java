@@ -53,6 +53,7 @@ import it.smartcommunitylab.aac.common.Utils;
 import it.smartcommunitylab.aac.manager.AttributesAdapter;
 import it.smartcommunitylab.aac.manager.ClientDetailsManager;
 import it.smartcommunitylab.aac.manager.ProviderServiceAdapter;
+import it.smartcommunitylab.aac.oauth.AACAuthenticationToken;
 import it.smartcommunitylab.aac.repository.UserRepository;
 
 /**
@@ -279,8 +280,7 @@ public class AuthController extends AbstractController {
 
 		UserDetails user = new User(userEntity.getId().toString(), "", list);
 
-		AbstractAuthenticationToken a = new UsernamePasswordAuthenticationToken(
-				user, null, list);
+		AbstractAuthenticationToken a = new AACAuthenticationToken(user, null, authorityUrl, list);
 		a.setDetails(authorityUrl);
 
 		SecurityContextHolder.getContext().setAuthentication(a);
