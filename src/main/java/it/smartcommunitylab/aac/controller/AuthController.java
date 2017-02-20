@@ -35,7 +35,6 @@ import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -58,6 +57,7 @@ import it.smartcommunitylab.aac.common.Utils;
 import it.smartcommunitylab.aac.manager.AttributesAdapter;
 import it.smartcommunitylab.aac.manager.ClientDetailsManager;
 import it.smartcommunitylab.aac.manager.ProviderServiceAdapter;
+import it.smartcommunitylab.aac.manager.RoleManager;
 import it.smartcommunitylab.aac.oauth.AACAuthenticationToken;
 import it.smartcommunitylab.aac.repository.UserRepository;
 
@@ -80,6 +80,9 @@ public class AuthController extends AbstractController {
 	@Autowired
 	private TokenStore tokenStore;
 
+	@Autowired
+	private RoleManager roleManager;
+	
 	private RequestCache requestCache = new HttpSessionRequestCache();
 
 	/**
@@ -187,6 +190,12 @@ public class AuthController extends AbstractController {
 		return new ModelAndView("redirect:" + target);
 	}
 
+	@RequestMapping("/accesserror")
+	public ModelAndView accessDenied(HttpServletRequest req) throws Exception {
+		return new ModelAndView("accesserror");
+	}
+
+	
 	/**
 	 * Generate redirect string parameter
 	 * 
@@ -220,9 +229,6 @@ public class AuthController extends AbstractController {
 	public ModelAndView forward(@PathVariable String authorityUrl,
 			@RequestParam(required = false) String target,
 			HttpServletRequest req, HttpServletResponse res) throws Exception {
-		List<GrantedAuthority> list = Collections
-				.<GrantedAuthority> singletonList(new SimpleGrantedAuthority(
-						"ROLE_USER"));
 
 		String nTarget = (String) req.getSession().getAttribute("redirect");
 		if (nTarget == null)
@@ -264,8 +270,9 @@ public class AuthController extends AbstractController {
 			userEntity = providerServiceAdapter.updateUser(authorityUrl, toMap(pairs), req);
 		}
 
-		UserDetails user = new User(userEntity.getId().toString(), "", list);
+		List<GrantedAuthority> list = roleManager.buildAuthorities(userEntity, authorityUrl);
 
+		UserDetails user = new User(userEntity.getId().toString(), "", list);
 		AbstractAuthenticationToken a = new AACAuthenticationToken(user, null, authorityUrl, list);
 		a.setDetails(authorityUrl);
 

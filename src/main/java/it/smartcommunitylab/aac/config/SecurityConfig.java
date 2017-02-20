@@ -64,6 +64,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	@Value("${application.url}")
 	private String applicationURL;
 
+	@Value("${security.restricted}")
+	private boolean restrictedAccess;
+
 	@Autowired
 	OAuth2ClientContext oauth2ClientContext;
 
@@ -133,9 +136,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		http
 			.authorizeRequests()
 				.antMatchers("/eauth/authorize/**").permitAll()
-				.antMatchers("/", "/dev**", "/admin/**","/oauth/authorize", "/eauth/**").authenticated()
+				.antMatchers("/oauth/authorize", "/eauth/**").authenticated()
+				.antMatchers("/", "/dev**").hasAnyAuthority((restrictedAccess ? "ROLE_MANAGER" : "ROLE_USER"),"ROLE_ADMIN")
+				.antMatchers("/admin/**").hasAnyAuthority("ROLE_ADMIN")
 				.and().exceptionHandling()
 					.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
+					.accessDeniedPage("/accesserror")
 				.and().logout()
 					.logoutSuccessUrl("/login").permitAll()
 				.and().csrf()

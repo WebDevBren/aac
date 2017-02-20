@@ -23,12 +23,20 @@ package it.smartcommunitylab.aac.model;
 public class Identity {
 
 	private String authority, key, value;
+	private String role;
 
 	public Identity(String authority, String key, String value) {
 		super();
 		this.authority = authority;
 		this.key = key;
 		this.value = value;
+	}
+	public Identity(String authority, String key, String value, String role) {
+		super();
+		this.authority = authority;
+		this.key = key;
+		this.value = value;
+		this.role = role;
 	}
 
 	/**
@@ -50,6 +58,10 @@ public class Identity {
 	 */
 	public String getValue() {
 		return value;
+	}
+
+	public String getRole() {
+		return role;
 	}
 
 	/* (non-Javadoc)

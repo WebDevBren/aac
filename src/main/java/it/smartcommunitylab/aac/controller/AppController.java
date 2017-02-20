@@ -17,15 +17,12 @@
 package it.smartcommunitylab.aac.controller;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,13 +33,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
-import it.smartcommunitylab.aac.manager.AdminManager;
-import it.smartcommunitylab.aac.manager.AdminManager.ROLE;
-import it.smartcommunitylab.aac.manager.AttributesAdapter;
 import it.smartcommunitylab.aac.manager.ClientDetailsManager;
-import it.smartcommunitylab.aac.model.Attribute;
 import it.smartcommunitylab.aac.model.ClientAppBasic;
-import it.smartcommunitylab.aac.model.Identity;
 import it.smartcommunitylab.aac.model.Response;
 import it.smartcommunitylab.aac.model.Response.RESPONSE;
 import it.smartcommunitylab.aac.model.User;
@@ -64,12 +56,6 @@ public class AppController extends AbstractController {
 	private ClientDetailsManager clientDetailsAdapter;
 	@Autowired
 	private UserRepository userRepository;
-	@Autowired
-	private AttributesAdapter attributesAdapter;
-	@Autowired
-	private AdminManager adminManager;
-	@Value("${security.restricted}")
-	private boolean accessMode;
 
 	/**
 	 * Retrieve the with the user data: currently on the username is added.
@@ -88,31 +74,6 @@ public class AppController extends AbstractController {
 	public ModelAndView developer() {
 		User user =  userRepository.findOne(getUserId());
 		Map<String,Object> model = new HashMap<String, Object>();
-
-		if (accessMode) {
-			String authority = getUserAuthority();
-			Set<Identity> identityAttrs = new HashSet<Identity>();
-			for (Attribute a : user.getAttributeEntities()) {
-				if (a.getAuthority().getName().equals(authority) && 
-					attributesAdapter.isIdentityAttr(a)) 
-				{
-					identityAttrs.add(new Identity(authority, a.getKey(), a.getValue()));
-				}
-			}
-			
-			try {
-				if (!adminManager.checkAccount(identityAttrs, ROLE.developer)) {
-					model.put("error", "Not authorized");
-//					return new ModelAndView("redirect:/logout");
-					return new ModelAndView("accesserror",model);
-				}
-			} catch (Exception e) {
-				model.put("error", e.getMessage());
-				logger.error("Problem checking user account: "+e.getMessage());
-//				return new ModelAndView("redirect:/logout");
-				return new ModelAndView("accesserror",model);
-			}
-		}
 		
 		String username = getUserName(user);
 		model.put("username",username);

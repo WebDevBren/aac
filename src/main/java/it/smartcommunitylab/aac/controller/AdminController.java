@@ -36,15 +36,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
-import it.smartcommunitylab.aac.manager.AdminManager;
-import it.smartcommunitylab.aac.manager.AdminManager.ROLE;
-import it.smartcommunitylab.aac.manager.AttributesAdapter;
 import it.smartcommunitylab.aac.model.ApprovalData;
-import it.smartcommunitylab.aac.model.Attribute;
 import it.smartcommunitylab.aac.model.ClientAppInfo;
 import it.smartcommunitylab.aac.model.ClientDetailsEntity;
 import it.smartcommunitylab.aac.model.IdPData;
-import it.smartcommunitylab.aac.model.Identity;
 import it.smartcommunitylab.aac.model.Resource;
 import it.smartcommunitylab.aac.model.Response;
 import it.smartcommunitylab.aac.model.Response.RESPONSE;
@@ -68,12 +63,8 @@ public class AdminController extends AbstractController{
 	private ClientDetailsRepository clientDetailsRepository;
 	@Autowired
 	private ResourceRepository resourceRepository;
-	@Autowired
-	private AttributesAdapter attributesAdapter;
-	@Autowired
-	private AdminManager adminManager;
-	
-	private Log logger = LogFactory.getLog(getClass());
+
+	private static final Log logger = LogFactory.getLog(AdminController.class);
 	/**
 	 * Retrieve the with the user data: currently on the username is added.
 	 * @return
@@ -81,30 +72,7 @@ public class AdminController extends AbstractController{
 	@RequestMapping("/admin")
 	public ModelAndView admin() {
 		User user = userRepository.findOne(getUserId());
-		String authority = getUserAuthority();
 		Map<String,Object> model = new HashMap<String, Object>();
-
-		Set<Identity> identityAttrs = new HashSet<Identity>();
-		for (Attribute a : user.getAttributeEntities()) {
-			if (a.getAuthority().getName().equals(authority) && 
-				attributesAdapter.isIdentityAttr(a)) 
-			{
-				identityAttrs.add(new Identity(authority, a.getKey(), a.getValue()));
-			}
-		}
-		
-		try {
-			if (!adminManager.checkAccount(identityAttrs, ROLE.admin)) {
-				model.put("error", "Not authorized");
-				return new ModelAndView("accesserror",model);
-//				return new ModelAndView("redirect:/admin/logout");
-			}
-		} catch (Exception e) {
-			model.put("error", e.getMessage());
-			logger.error("Problem checking admin account: "+e.getMessage());
-			return new ModelAndView("accesserror");
-//			return new ModelAndView("redirect:/admin/logout");
-		}
 		
 		String username = getUserName(user);
 		model.put("username",username);
