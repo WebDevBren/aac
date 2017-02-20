@@ -40,9 +40,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.common.util.OAuth2Utils;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -75,23 +80,7 @@ public class AuthController extends AbstractController {
 	@Autowired
 	private TokenStore tokenStore;
 
-	/**
-	 * Redirect to the login type selection page
-	 * 
-	 * @param req
-	 * @return
-	 * @throws Exception
-	 */
-	@RequestMapping("/eauth/admin")
-	public ModelAndView admin(HttpServletRequest req) throws Exception {
-		Map<String, Object> model = new HashMap<String, Object>();
-		Map<String, String> authorities = attributesAdapter
-				.getWebAuthorityUrls();
-		model.put("authorities", authorities);
-		String target = prepareRedirect(req, "/admin");
-		req.getSession().setAttribute("redirect", target);
-		return new ModelAndView("authorities", model);
-	}
+	private RequestCache requestCache = new HttpSessionRequestCache();
 
 	/**
 	 * Redirect to the login type selection page.
@@ -100,15 +89,55 @@ public class AuthController extends AbstractController {
 	 * @return
 	 * @throws Exception
 	 */
-	@RequestMapping("/eauth/dev")
-	public ModelAndView developer(HttpServletRequest req) throws Exception {
+	@RequestMapping("/login")
+	public ModelAndView login(HttpServletRequest req, HttpServletResponse res) throws Exception {
 		Map<String, Object> model = new HashMap<String, Object>();
-		Map<String, String> authorities = attributesAdapter
-				.getWebAuthorityUrls();
-		model.put("authorities", authorities);
-		String target = prepareRedirect(req, "/dev");
+		Map<String, String> authorities = attributesAdapter.getWebAuthorityUrls();
+
+		SavedRequest savedRequest = requestCache.getRequest(req, res);
+		String target = savedRequest != null ? savedRequest.getRedirectUrl() : prepareRedirect(req, "/dev");
 		req.getSession().setAttribute("redirect", target);
-		return new ModelAndView("authorities", model);
+		
+		Map<String, String> resultAuthorities = authorities;
+		// If original request has client_id parameter, reduce the authorities to the ones of the client app
+		if (savedRequest != null) {
+			String[] clientIds = savedRequest.getParameterValues(OAuth2Utils.CLIENT_ID);
+			if (clientIds != null && clientIds.length > 0) {
+				String clientId = clientIds[0];
+				
+				Set<String> idps = clientDetailsAdapter.getIdentityProviders(clientId);
+				String[] loginAuthoritiesParam = savedRequest.getParameterValues("authorities");
+				String loginAuthorities = "";
+				if (loginAuthoritiesParam != null && loginAuthoritiesParam.length > 0) {
+					loginAuthorities = StringUtils.arrayToCommaDelimitedString(loginAuthoritiesParam);
+				}
+				
+				Set<String> all = null;
+				if (StringUtils.hasText(loginAuthorities)) {
+					all = new HashSet<String>(Arrays.asList(loginAuthorities.split(",")));
+				} else {
+					all = new HashSet<String>(authorities.keySet());
+				}
+				resultAuthorities = new HashMap<String, String>();
+				for (String idp : all) {
+					if (authorities.containsKey(idp) && idps.contains(idp))
+						resultAuthorities.put(idp, authorities.get(idp));
+				}
+
+				if (resultAuthorities.isEmpty()) {
+					model.put("message", "No Identity Providers assigned to the app");
+					return new ModelAndView("oauth_error", model);
+				}
+				req.getSession().setAttribute("client_id", clientId);
+				if (resultAuthorities.size() == 1) {
+					return new ModelAndView("redirect:"
+							+ Utils.filterRedirectURL(resultAuthorities.keySet().iterator().next()));
+				}
+			}
+		}
+		req.getSession().setAttribute("authorities", resultAuthorities);
+		
+		return new ModelAndView("login", model);
 	}
 
 	/**
@@ -127,45 +156,15 @@ public class AuthController extends AbstractController {
 			@RequestParam(value = "authorities", required = false) String loginAuthorities)
 			throws Exception {
 		Map<String, Object> model = new HashMap<String, Object>();
-		Map<String, String> authorities = attributesAdapter
-				.getWebAuthorityUrls();
 
 		String clientId = req.getParameter("client_id");
 		if (clientId == null || clientId.isEmpty()) {
 			model.put("message", "Missing client_id");
 			return new ModelAndView("oauth_error", model);
 		}
-		Set<String> idps = clientDetailsAdapter.getIdentityProviders(clientId);
-
-		Set<String> all = null;
-		if (loginAuthorities != null && !loginAuthorities.isEmpty()) {
-			all = new HashSet<String>(
-					Arrays.asList(loginAuthorities.split(",")));
-		} else {
-			all = new HashSet<String>(authorities.keySet());
-		}
-		Map<String, String> resultAuthorities = new HashMap<String, String>();
-		for (String idp : all) {
-			if (authorities.containsKey(idp) && idps.contains(idp))
-				resultAuthorities.put(idp, authorities.get(idp));
-		}
-
-		if (resultAuthorities.isEmpty()) {
-			model.put("message", "No Identity Providers assigned to the app");
-			return new ModelAndView("oauth_error", model);
-		}
-
+		
 		String target = prepareRedirect(req, "/oauth/authorize");
-		req.getSession().setAttribute("redirect", target);
-		req.getSession().setAttribute("client_id", clientId);
-
-		if (resultAuthorities.size() == 1) {
-			return new ModelAndView("redirect:"
-					+ Utils.filterRedirectURL(resultAuthorities.keySet().iterator().next()));
-		}
-		model.put("authorities", resultAuthorities);
-
-		return new ModelAndView("authorities", model);
+		return new ModelAndView("redirect:"+target);
 	}
 
 	/**
@@ -181,24 +180,11 @@ public class AuthController extends AbstractController {
 	@RequestMapping("/eauth/authorize/{authority}")
 	public ModelAndView authoriseWithAuthority(@PathVariable String authority,
 			HttpServletRequest req) throws Exception {
-		String clientId = req.getParameter("client_id");
-		if (clientId == null || clientId.isEmpty()) {
-			Map<String, Object> model = new HashMap<String, Object>();
-			model.put("message", "Missing client_id");
-			return new ModelAndView("oauth_error", model);
-		}
-		Set<String> idps = clientDetailsAdapter.getIdentityProviders(clientId);
-		if (!idps.contains(authority)) {
-			Map<String, Object> model = new HashMap<String, Object>();
-			model.put("message", "incorrect identity provider for the app");
-			return new ModelAndView("oauth_error", model);
-		}
+		
+		String target = prepareRedirect(req, "/eauth/authorize");
+		target += "&authorities="+authority;
 
-		String target = prepareRedirect(req, "/oauth/authorize");
-		req.getSession().setAttribute("redirect", target);
-		req.getSession().setAttribute("client_id", clientId);
-
-		return new ModelAndView("redirect:" + Utils.filterRedirectURL(authority));
+		return new ModelAndView("redirect:" + target);
 	}
 
 	/**

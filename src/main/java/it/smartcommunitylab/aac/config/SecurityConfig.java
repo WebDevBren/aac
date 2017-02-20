@@ -42,7 +42,6 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.filter.CompositeFilter;
 
-import it.smartcommunitylab.aac.auth.internal.InternalRegFilter;
 import it.smartcommunitylab.aac.common.Utils;
 import it.smartcommunitylab.aac.model.ClientDetailsRowMapper;
 import it.smartcommunitylab.aac.oauth.AutoJdbcAuthorizationCodeServices;
@@ -129,25 +128,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		return filter;
 	}	
 	
-	@Bean Filter internalAuthFilter() {
-		InternalRegFilter filter = new InternalRegFilter("/eauth/internal");
-		return filter;
-	}	
-	
-	
 	@Override
 	public void configure(HttpSecurity http) throws Exception {
 		http
 			.authorizeRequests()
-				.antMatchers("/dev/**","/oauth/authorize").authenticated()
+				.antMatchers("/eauth/authorize/**").permitAll()
+				.antMatchers("/", "/dev**", "/admin/**","/oauth/authorize", "/eauth/**").authenticated()
 				.and().exceptionHandling()
-					.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/eauth/dev"))
+					.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login"))
 				.and().logout()
-					.logoutSuccessUrl("/").permitAll()
+					.logoutSuccessUrl("/login").permitAll()
 				.and().csrf()
 					.disable()
 					.addFilterBefore(extOAuth2Filter(), BasicAuthenticationFilter.class)
-					.addFilterBefore(internalAuthFilter(), BasicAuthenticationFilter.class)
 					;
 	}
 

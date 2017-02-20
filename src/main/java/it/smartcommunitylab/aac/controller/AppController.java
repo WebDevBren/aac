@@ -75,6 +75,15 @@ public class AppController extends AbstractController {
 	 * Retrieve the with the user data: currently on the username is added.
 	 * @return
 	 */
+	@RequestMapping("/")
+	public ModelAndView home() {
+		return new ModelAndView("redirect:/dev");
+	}
+
+	/**
+	 * Retrieve the with the user data: currently on the username is added.
+	 * @return
+	 */
 	@RequestMapping("/dev")
 	public ModelAndView developer() {
 		User user =  userRepository.findOne(getUserId());

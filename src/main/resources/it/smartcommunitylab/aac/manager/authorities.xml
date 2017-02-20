@@ -20,19 +20,7 @@
 <authorities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns="http://aac.smartcommunitylab.it/jaxbmodel"  
   xsi:schemaLocation="http://aac.smartcommunitylab.it/jaxbmodel ../../../../../jaxb/binding/attributeSchema.xsd">
-<!-- 	<authorityMapping name="unitn" url="unitn">
-		<attributes alias="it.smartcommunitylab.aac.givenname">givenName</attributes>
-		<attributes alias="it.smartcommunitylab.aac.surname">sn</attributes>
-		<attributes>mailAll</attributes>
-		<identifyingAttributes>idada</identifyingAttributes>
-	</authorityMapping>
- -->	
-<!--   <authorityMapping name="google" url="google" public="true" useParams="true">
-      <attributes alias="it.smartcommunitylab.aac.givenname">OIDC_CLAIM_given_name</attributes>
-      <attributes alias="it.smartcommunitylab.aac.surname">OIDC_CLAIM_family_name</attributes>
-      <identifyingAttributes>OIDC_CLAIM_email</identifyingAttributes>
-  </authorityMapping>
- -->  
+
   <authorityMapping name="google" url="google" public="true" useParams="true">
       <attributes alias="it.smartcommunitylab.aac.givenname">given_name</attributes>
       <attributes alias="it.smartcommunitylab.aac.surname">family_name</attributes>
@@ -61,7 +49,7 @@
       <attributes>email</attributes>
       <identifyingAttributes>id</identifyingAttributes>
   </authorityMapping>
-  <authorityMapping name="internal" url="internal" public="false" web="false"  useParams="true">
+  <authorityMapping name="internal" url="internal" public="false" web="true"  useParams="true">
       <attributes alias="it.smartcommunitylab.aac.givenname">name</attributes>
       <attributes alias="it.smartcommunitylab.aac.surname">surname</attributes>
       <attributes>email</attributes>
@@ -97,7 +85,7 @@
   </authorityMapping>
 
   <authorityMatching>
-      <authority name="google" attribute="OIDC_CLAIM_email"/>
+      <authority name="google" attribute="email"/>
       <authority name="googlelocal" attribute="email"/>
       <authority name="facebook" attribute="email"/>
       <authority name="facebooklocal" attribute="email"/>

@@ -52,21 +52,11 @@ import it.smartcommunitylab.aac.model.Registration;
  *
  */
 @Controller
-@RequestMapping(value = "/internal")
+@RequestMapping
 public class RegistrationController {
 
 	@Autowired
 	private RegistrationManager manager;
-	
-	/**
-	 * Redirect to login page
-	 * @param req
-	 * @return
-	 */
-	@RequestMapping("/login")
-	public String loginPage(HttpServletRequest req) {
-		return "registration/login";
-	}
 	
 	/**
 	 * Login the user 
@@ -93,8 +83,6 @@ public class RegistrationController {
 			} catch (UnsupportedEncodingException e) {
 				throw new RegistrationException(e);
 			}
-			req.getSession().setAttribute(
-					InternalRegFilter.SESSION_INTERNAL_CHECK, "true");
 			String redirect = String
 					.format("redirect:/eauth/internal?target=%s&email=%s&name=%s&surname=%s",
 							targetEnc,
@@ -104,7 +92,7 @@ public class RegistrationController {
 			return redirect;
 		} catch (RegistrationException e) {
 			model.addAttribute("error", e.getClass().getSimpleName());
-			return "registration/login";
+			return "login";
 		}
 	}
 	/**
@@ -113,7 +101,7 @@ public class RegistrationController {
 	 * @param req
 	 * @return
 	 */
-	@RequestMapping("/register")
+	@RequestMapping("/internal/register")
 	public String regPage(Model model,
 			HttpServletRequest req) {
 		model.addAttribute("reg", new RegistrationBean());
@@ -128,7 +116,7 @@ public class RegistrationController {
 	 * @param req
 	 * @return
 	 */
-	@RequestMapping(value = "/register", method = RequestMethod.POST)
+	@RequestMapping(value = "/internal/register", method = RequestMethod.POST)
 	public String register(Model model, 
 			@ModelAttribute("reg") @Valid RegistrationBean reg,
 			BindingResult result,
@@ -159,7 +147,7 @@ public class RegistrationController {
 	 * @param req
 	 * @return
 	 */
-	@RequestMapping(value = "/register/rest", method = RequestMethod.POST)
+	@RequestMapping(value = "/internal/register/rest", method = RequestMethod.POST)
 	public @ResponseBody void registerREST(@RequestBody RegistrationBean reg,
 			HttpServletResponse res) 
 	{
@@ -191,7 +179,7 @@ public class RegistrationController {
 	 * @param username
 	 * @return
 	 */
-	@RequestMapping(value = "/resend")
+	@RequestMapping(value = "/internal/resend")
 	public String resendPage() {
 		return "registration/resend";
 	}
@@ -202,7 +190,7 @@ public class RegistrationController {
 	 * @param username
 	 * @return
 	 */
-	@RequestMapping(value = "/resend", method = RequestMethod.POST)
+	@RequestMapping(value = "/internal/resend", method = RequestMethod.POST)
 	public String resendConfirm(Model model, @RequestParam String username) {
 		try {
 			manager.resendConfirm(username);
@@ -220,7 +208,7 @@ public class RegistrationController {
 	 * @param confirmationCode
 	 * @return
 	 */
-	@RequestMapping("/confirm")
+	@RequestMapping("/internal/confirm")
 	public String confirm(Model model, @RequestParam String confirmationCode, HttpServletRequest req) {
 		try {
 			Registration user = manager.confirm(confirmationCode);
@@ -238,7 +226,7 @@ public class RegistrationController {
 		}
 	}
 	
-	@RequestMapping(value = "/reset")
+	@RequestMapping(value = "/internal/reset")
 	public String resetPage() {
 		return "registration/resetpwd";
 	}
@@ -252,7 +240,7 @@ public class RegistrationController {
 		}
 		return "registration/resetsuccess";
 	}
-	@RequestMapping(value = "/changepwd", method = RequestMethod.POST)
+	@RequestMapping(value = "/internal/changepwd", method = RequestMethod.POST)
 	public String changePwd(Model model, 
 			@ModelAttribute("reg") @Valid RegistrationBean reg,
 			BindingResult result,
