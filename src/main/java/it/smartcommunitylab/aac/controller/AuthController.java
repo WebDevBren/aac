@@ -190,6 +190,15 @@ public class AuthController extends AbstractController {
 		return new ModelAndView("redirect:" + target);
 	}
 
+	/**
+	 * Endpoint for Access Denied exception page
+	 * 
+	 * @param req
+	 * @param authority
+	 *            identity provider alias
+	 * @return
+	 * @throws Exception
+	 */
 	@RequestMapping("/accesserror")
 	public ModelAndView accessDenied(HttpServletRequest req) throws Exception {
 		return new ModelAndView("accesserror");

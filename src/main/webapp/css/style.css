@@ -32,6 +32,17 @@ body {
 	font-family: "lucida grande", tahoma, arial, sans-serif;
 }
 
+.confirmation-content {
+	padding: 10px;
+	text-align: left;
+}
+.confirmation-content h2 {
+	text-align: center;
+}
+.confirmation-content .row form {
+    display: initial !important;
+}
+
 ul.pprovider {
 	margin: 0 auto;
 	padding: 0;
