@@ -29,14 +29,14 @@
         base-package="it.smartcommunitylab.aac" />
     
     <!-- REST SERVICES EXPOSED BY THE AAC -->
-    <sec:http pattern="/basicprofile/**" create-session="never" entry-point-ref="clientAuthenticationEntryPoint" >
-        <sec:anonymous enabled="false" />
-        <sec:intercept-url  pattern="/basicprofile/**" access="IS_AUTHENTICATED_FULLY" />
+    <sec:http pattern="/basicprofile/**"  create-session="never" entry-point-ref="clientAuthenticationEntryPoint" >
+        <sec:intercept-url method="OPTIONS" pattern="/basicprofile/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
+        <sec:intercept-url pattern="/basicprofile/**" access="IS_AUTHENTICATED_FULLY" />
         <sec:custom-filter ref="resourceFilter" before="PRE_AUTH_FILTER" />
         <sec:access-denied-handler ref="oauthAccessDeniedHandler" />
     </sec:http>
     <sec:http pattern="/accountprofile/**" create-session="never" entry-point-ref="clientAuthenticationEntryPoint" >
-        <sec:anonymous enabled="false" />
+        <sec:intercept-url method="OPTIONS"  pattern="/accountprofile/**" access="IS_AUTHENTICATED_ANONYMOUSLY" />
         <sec:intercept-url  pattern="/accountprofile/**" access="IS_AUTHENTICATED_FULLY" />
         <sec:custom-filter ref="resourceFilter" before="PRE_AUTH_FILTER" />
         <sec:access-denied-handler ref="oauthAccessDeniedHandler" />
