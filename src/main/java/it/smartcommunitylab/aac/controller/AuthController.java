@@ -15,6 +15,11 @@
  */
 package it.smartcommunitylab.aac.controller;
 
+import it.smartcommunitylab.aac.manager.AttributesAdapter;
+import it.smartcommunitylab.aac.manager.ClientDetailsManager;
+import it.smartcommunitylab.aac.manager.ProviderServiceAdapter;
+import it.smartcommunitylab.aac.repository.UserRepository;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -51,11 +56,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
-import it.smartcommunitylab.aac.manager.AttributesAdapter;
-import it.smartcommunitylab.aac.manager.ClientDetailsManager;
-import it.smartcommunitylab.aac.manager.ProviderServiceAdapter;
-import it.smartcommunitylab.aac.repository.UserRepository;
-
 /**
  * Controller for developer console entry points
  */
@@ -70,6 +70,8 @@ public class AuthController extends AbstractController {
 	private AttributesAdapter attributesAdapter;
 	@Value("${mode.testing}")
 	private boolean testMode;
+	@Value("${mode.reauth}")
+	private boolean reauth;	
 	@Value("${mode.collectInfo:false}")
 	private boolean collectInfoMode;
 	@Autowired
@@ -307,7 +309,7 @@ public class AuthController extends AbstractController {
 			
 			Authentication old = SecurityContextHolder.getContext().getAuthentication();
 			if (old != null && old instanceof UsernamePasswordAuthenticationToken) {
-				if (!authorityUrl.equals(old.getDetails())) {
+				if (!authorityUrl.equals(old.getDetails()) || reauth == true) {
 		            new SecurityContextLogoutHandler().logout(req, res, old);
 			        SecurityContextHolder.getContext().setAuthentication(null);
 
