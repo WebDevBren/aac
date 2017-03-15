@@ -72,7 +72,7 @@ associates the role *admin* to the user with email abc@gmail.com if authenticate
    
 ## Usage Scenarios
 
-###1. Using AAC for Authentication
+### 1. Using AAC for Authentication
 
 This is a scenario where AAC is used as an Idenity Provider in a federated authentication environment. This is the case, for example, for IFE authentication or Citizenpedia.
 
