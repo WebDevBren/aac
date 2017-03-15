@@ -63,7 +63,7 @@ public class RegistrationManager {
 	@Autowired
 	private RegistrationRepository repository;
 
-	@Autowired
+	@Autowired(required=false)
 	private MailSender sender;
 	
 	@Resource(name = "messageSource")

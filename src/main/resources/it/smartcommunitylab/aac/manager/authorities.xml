@@ -20,23 +20,6 @@
 <authorities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns="http://aac.smartcommunitylab.it/jaxbmodel"  
   xsi:schemaLocation="http://aac.smartcommunitylab.it/jaxbmodel ../../../../../jaxb/binding/attributeSchema.xsd">
-<!-- 	<authorityMapping name="unitn" url="unitn">
-		<attributes alias="it.smartcommunitylab.aac.givenname">givenName</attributes>
-		<attributes alias="it.smartcommunitylab.aac.surname">sn</attributes>
-		<attributes>mailAll</attributes>
-		<identifyingAttributes>idada</identifyingAttributes>
-	</authorityMapping>
- -->	
- <authorityMapping name="fbk" url="fbk">
-		<attributes alias="it.smartcommunitylab.aac.givenname">givenName</attributes>
-		<attributes alias="it.smartcommunitylab.aac.surname">sn</attributes>
-		<identifyingAttributes>eppn</identifyingAttributes>
-	</authorityMapping>
-<!--   <authorityMapping name="google" url="google" useParams="true" public="true"> -->
-<!--       <attributes alias="it.smartcommunitylab.aac.givenname">openid.ext1.value.name</attributes> -->
-<!--       <attributes alias="it.smartcommunitylab.aac.surname">openid.ext1.value.surname</attributes> -->
-<!--       <identifyingAttributes>openid.ext1.value.email</identifyingAttributes> -->
-<!--   </authorityMapping> -->
   <authorityMapping name="google" url="google" public="true" useParams="true">
       <attributes alias="it.smartcommunitylab.aac.givenname">OIDC_CLAIM_given_name</attributes>
       <attributes alias="it.smartcommunitylab.aac.surname">OIDC_CLAIM_family_name</attributes>
@@ -48,7 +31,7 @@
       <attributes>email</attributes>
       <identifyingAttributes>id</identifyingAttributes>
   </authorityMapping>
-  <authorityMapping name="googlelocal" url="googlelocal" public="true" web="false">
+<!--   <authorityMapping name="googlelocal" url="googlelocal" public="true" web="false">
       <attributes alias="it.smartcommunitylab.aac.givenname">given_name</attributes>
       <attributes alias="it.smartcommunitylab.aac.surname">family_name</attributes>
       <attributes>email</attributes>
@@ -62,78 +45,26 @@
       <attributes>email</attributes>
       <identifyingAttributes>id</identifyingAttributes>
   </authorityMapping>
-  <authorityMapping name="internal" url="internal" public="false" web="false"  useParams="true">
+ -->  
+ <authorityMapping name="internal" url="internal" public="false" web="false"  useParams="true">
       <attributes alias="it.smartcommunitylab.aac.givenname">name</attributes>
       <attributes alias="it.smartcommunitylab.aac.surname">surname</attributes>
       <attributes>email</attributes>
       <identifyingAttributes>email</identifyingAttributes>
   </authorityMapping>
-  <authorityMapping name="anonymous" url="anonymous" public="true" web="false">
+<!--   <authorityMapping name="anonymous" url="anonymous" public="true" web="false">
       <identifyingAttributes>externalId</identifyingAttributes>
   </authorityMapping>
-  <authorityMapping name="adc" url="adc" public="false" web="true" >
-      <attributes alias="it.smartcommunitylab.aac.givenname">pat_attribute_nome</attributes>
-      <attributes alias="it.smartcommunitylab.aac.surname">pat_attribute_cognome</attributes>
-      <attributes>pat_attribute_email</attributes>
-      <attributes>pat_attribute_capdomicilio</attributes>
-      <attributes>pat_attribute_capresidenza</attributes>
-      <attributes>pat_attribute_cellulare</attributes>
-      <attributes>pat_attribute_cittadomicilio</attributes>
-      <attributes>pat_attribute_cittaresidenza</attributes>
-      <attributes>pat_attribute_datanascita</attributes>
-      <attributes>pat_attribute_emailaddresspersonale</attributes>
-      <attributes>pat_attribute_indirizzodomicilio</attributes>
-      <attributes>pat_attribute_indirizzoresidenza</attributes>
-      <attributes>pat_attribute_luogonascita</attributes>
-      <attributes>pat_attribute_provinciadomicilio</attributes>
-      <attributes>pat_attribute_provincianascita</attributes>
-      <attributes>pat_attribute_provinciaresidenza</attributes>
-      <attributes>pat_attribute_sesso</attributes>
-      <attributes>pat_attribute_statodomicilio</attributes>
-      <attributes>pat_attribute_statonascita</attributes>
-      <attributes>pat_attribute_statoresidenza</attributes>
-      <attributes>pat_attribute_telefono</attributes>
-      <attributes>pat_attribute_titolo</attributes>
-      <attributes>pat_attribute_subjectdn</attributes>
-      <attributes>pat_attribute_issuerdn</attributes>
-      <attributes>pat_attribute_base64</attributes>
-      <identifyingAttributes>pat_attribute_codicefiscale</identifyingAttributes>
-  </authorityMapping>
-
+ -->
   <authorityMatching>
       <authority name="google" attribute="OIDC_CLAIM_email"/>
-      <authority name="googlelocal" attribute="email"/>
+      <!-- <authority name="googlelocal" attribute="email"/> -->
       <authority name="facebook" attribute="email"/>
-      <authority name="facebooklocal" attribute="email"/>
+      <!-- <authority name="facebooklocal" attribute="email"/> -->
       <authority name="internal" attribute="email"/>
       </authorityMatching>
-  <authorityMatching>
+   <authorityMatching>
       <authority name="facebook" attribute="id"/>
       <authority name="facebooklocal" attribute="id"/>
   </authorityMatching>
-  
-<!--   <authorityMatching>
-      <authority name="google" attribute="OIDC_CLAIM_email"/>
-      <authority name="googlelocal" attribute="email"/>
-  </authorityMatching>
-  <authorityMatching>
-      <authority name="google" attribute="OIDC_CLAIM_email"/>
-      <authority name="facebook" attribute="email"/>
-  </authorityMatching>
-  <authorityMatching>
-      <authority name="facebook" attribute="email"/>
-      <authority name="googlelocal" attribute="email"/>
-  </authorityMatching>
-  <authorityMatching>
-      <authority name="facebook" attribute="fb_id"/>
-      <authority name="facebooklocal" attribute="fb_id"/>
-  </authorityMatching>
-  <authorityMatching>
-      <authority name="facebooklocal" attribute="email"/>
-      <authority name="googlelocal" attribute="email"/>
-  </authorityMatching>
-  <authorityMatching>
-      <authority name="facebooklocal" attribute="email"/>
-      <authority name="google" attribute="OIDC_CLAIM_email"/>
-  </authorityMatching>
- --></authorities>
+</authorities>

@@ -28,7 +28,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
@@ -38,7 +37,7 @@ import it.smartcommunitylab.aac.common.RegistrationException;
  * @author raman
  *
  */
-@Component
+//@Component
 public class MailSender {
 
 	private static JavaMailSenderImpl mailSender = null;

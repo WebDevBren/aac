@@ -15,9 +15,6 @@ public class InternalRegFilter extends OncePerRequestFilter {
 	@Value("${application.url}")
 	private String applicationURL;
 
-	@Value("${mode.testing}")
-	private boolean testMode;
-
 	public static final String SESSION_INTERNAL_CHECK = "internal-login"; 
 	
 	@Override
@@ -31,7 +28,7 @@ public class InternalRegFilter extends OncePerRequestFilter {
 
 		String loggedWithInternal = (String) request.getSession().getAttribute(
 				InternalRegFilter.SESSION_INTERNAL_CHECK);
-		if (loggedWithInternal == null && !testMode) {
+		if (loggedWithInternal == null) {
 			response.sendRedirect(applicationURL + "/internal/login");
 		} else {
 			filterChain.doFilter(request, response);

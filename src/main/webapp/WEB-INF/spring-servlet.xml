@@ -229,13 +229,10 @@
 	    <constructor-arg>
 	        <map>
 	            <entry key="googlelocal">
-	                <bean id="googleLocalAuthorityHandler" class="it.smartcommunitylab.aac.authority.GoogleAuthorityHandler">
-	                    <constructor-arg value="${google.clientIds}"/>
-	                </bean>    
+	                <bean id="googleLocalAuthorityHandler" class="it.smartcommunitylab.aac.authority.GoogleAuthorityHandler"/>
 	            </entry>
               <entry key="facebooklocal">
-                  <bean id="facebookLocalAuthorityHandler" class="it.smartcommunitylab.aac.authority.FBAuthorityHandler">
-                  </bean>    
+                  <bean id="facebookLocalAuthorityHandler" class="it.smartcommunitylab.aac.authority.FBAuthorityHandler"/>
               </entry>
 	            <entry key="anonymous">
                   <bean id="anonymousAuthorityHandler" class="it.smartcommunitylab.aac.authority.AnonymousAuthorityHandler"/>
@@ -246,10 +243,9 @@
 
 	<!--  default authority handler -->
 	<bean id="defaultHandler" class="it.smartcommunitylab.aac.authority.DefaultAuthorityHandler">
-	    <constructor-arg value="${mode.testing}"></constructor-arg>
+	    <constructor-arg value="false"></constructor-arg>
 	</bean>
-	<bean id="socialEngine" class="${social.engine.impl}"/>
-		
+
 	<import resource="datalayer.xml"/>
 
 	    <!-- Scheduler refreshing security list -->

@@ -48,9 +48,6 @@ import it.smartcommunitylab.aac.repository.UserRepository;
 @Transactional
 public class ProviderServiceAdapter {
 
-	@Value("${mode.testing}")
-	private boolean testMode;
-
 	@Autowired
 	private AttributesAdapter attrAdapter;
 	@Autowired
@@ -59,16 +56,13 @@ public class ProviderServiceAdapter {
 	private UserRepository userRepository;
 	@Autowired
 	private AttributeRepository attributeRepository;
-	@Autowired
-	private SecurityAdapter secAdapter;
-	@Autowired
-	private SocialEngine socialEngine;
+
+	private SocialEngine socialEngine = new DefaultSocialEngine();
 	
 	
 	@PostConstruct
 	private void init() throws JAXBException, IOException {
 		attrAdapter.init();
-		secAdapter.init();
 	}
 
 	/**
@@ -107,24 +101,17 @@ public class ProviderServiceAdapter {
 		list.clear();
 		populateAttributes(auth, attributes, list, users.isEmpty() ? null : users.get(0).getAttributeEntities());
 
-		// check the access rights for the user with respect to the whitelist
-		if (!secAdapter.access(auth.getName(), new ArrayList<String>(attributes.keySet()), attributes)) {
-			throw new SecurityException("Access denied to user");
-		}
-
 		User user = null;
 		if (users.isEmpty()) {
 			String socialId = "1";
 			user = new User(socialId, attributes.get(Config.NAME_ATTR), attributes.get(Config.SURNAME_ATTR), new HashSet<Attribute>(list));
 			user = userRepository.save(user);
-			if (!testMode) {
-				try {
-					socialId = socialEngine.createUser(""+user.getId());
-					user.setSocialId(socialId);
-					userRepository.save(user);
-				} catch (SocialEngineException e) {
-					throw new IllegalArgumentException(e.getMessage(),e);
-				}
+			try {
+				socialId = socialEngine.createUser(""+user.getId());
+				user.setSocialId(socialId);
+				userRepository.save(user);
+			} catch (SocialEngineException e) {
+				throw new IllegalArgumentException(e.getMessage(),e);
 			}
 		} else {
 			user = users.get(0);

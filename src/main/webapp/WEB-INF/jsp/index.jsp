@@ -44,9 +44,9 @@
         <div class="collapse navbar-collapse">	        
           <ul class="nav navbar-nav">
 	          <li class="{{activeView('apps')}}"><a href="#" ng-click="currentView='apps'">API Clients</a></li>
-            <li class="{{activeView('services')}}"><a href="#" ng-click="currentView='services'">My Services</a></li>
+<!--               <li class="{{activeView('services')}}"><a href="#" ng-click="currentView='services'">My Services</a></li>
 	          <li class="{{activeView('profile')}}"><a href="#" ng-click="currentView='profile'">Profile</a></li>
-	        </ul>
+ -->	        </ul>
 	        <ul class="nav navbar-nav pull-right">
 	          <li id="fat-menu" class="dropdown">
 	            <a href="#" id="drop3" role="button" class="dropdown-toggle" data-toggle="dropdown"><%=request.getAttribute("username") %> <b class="caret"></b></a>

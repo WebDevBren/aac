@@ -15,9 +15,6 @@ public class GoogleProviderFilter extends OncePerRequestFilter {
 	@Value("${application.url}")
 	private String applicationURL;
 
-	@Value("${mode.testing}")
-	private boolean testMode;
-
 	@Override
 	public void destroy() {
 	}
@@ -29,7 +26,7 @@ public class GoogleProviderFilter extends OncePerRequestFilter {
 
 		String loggedWithGoogle = (String) request.getSession().getAttribute(
 				GoogleAuthHelper.SESSION_GOOGLE_CHECK);
-		if (loggedWithGoogle == null && !testMode) {
+		if (loggedWithGoogle == null) {
 			response.sendRedirect(applicationURL + "/auth/google-oauth");
 		} else {
 			filterChain.doFilter(request, response);

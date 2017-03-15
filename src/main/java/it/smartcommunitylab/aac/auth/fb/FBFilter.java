@@ -15,9 +15,6 @@ public class FBFilter extends OncePerRequestFilter {
 	@Value("${application.url}")
 	private String applicationURL;
 
-	@Value("${mode.testing}")
-	private boolean testMode;
-
 	@Override
 	public void destroy() {
 	}
@@ -29,7 +26,7 @@ public class FBFilter extends OncePerRequestFilter {
 
 		String loggedWithFB = (String) request.getSession().getAttribute(
 				FBAuthHelper.SESSION_FB_CHECK);
-		if (loggedWithFB == null && !testMode) {
+		if (loggedWithFB == null) {
 			response.sendRedirect(applicationURL + "/auth/fb-oauth");
 		} else {
 			filterChain.doFilter(request, response);

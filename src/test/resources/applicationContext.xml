@@ -28,7 +28,6 @@
 	<!-- Scan controllers in this package -->
 	<context:component-scan base-package="it.smartcommunitylab.aac.manager" />
 
-	 <bean id="socialEngine" class="${social.engine.impl}"/>
 	<bean id="resourceStorage" class="it.smartcommunitylab.aac.oauth.CachedResourceStorage"/>
   
 	<bean id="authorityHandlerContainer"

@@ -23,6 +23,7 @@ import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.github.scribejava.apis.FacebookApi;
 import com.github.scribejava.core.builder.ServiceBuilder;
@@ -57,12 +58,14 @@ public final class FBAuthHelper {
 
 	@PostConstruct
 	private void init() {
-		service = new ServiceBuilder()
-        .apiKey(clientId)
-        .apiSecret(clientSecret)
-        .callback(callbackURI)
-        .scope("public_profile,email")
-        .build(FacebookApi.instance());
+		if (StringUtils.hasText(clientId) && StringUtils.hasText(clientSecret)) {
+			service = new ServiceBuilder()
+	        .apiKey(clientId)
+	        .apiSecret(clientSecret)
+	        .callback(callbackURI)
+	        .scope("public_profile,email")
+	        .build(FacebookApi.instance());
+		}
 	}
 
 	/**
