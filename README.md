@@ -35,9 +35,7 @@ The project is implemented to be built with Apache Maven. To build the project, 
 This will create the *aac.war* in *target* folder. The arcihve is ready for deployment in standard servlet container. 
 The AAC management console is available at 
 
-<code>
-<host:port>/aac
-</code> 
+   http://localhost:8080/aac
  
 ## Generic Configuration
 
@@ -118,15 +116,19 @@ url hash part:
 
 - Use the obtained token to obtain user data using the AAC API:
 
-    GET /aac/basicprofile/me HTTPS/1.1 
-    Host: aacserver.com 
-    Accept: application/json 
-    Authorization: Bearer 025a90d4-d4dd-4d90-8354-779415c0c6d8
 
-  The result of the flow describes basic user properties (e.g., userId) that can be used to uniquely identify the 
+      GET /aac/basicprofile/me HTTPS/1.1 
+      Host: aacserver.com 
+      Accept: application/json 
+      Authorization: Bearer 025a90d4-d4dd-4d90-8354-779415c0c6d8
+
+
+  The result of the invocation describes basic user properties (e.g., userId) that can be used to uniquely identify the 
   user.
   
-###2. Using AAC for Securing Resoures and Services
+  
+### 2. Using AAC for Securing Resoures and Services
+
 
 In this scenario the goal is to restrict access to the protected resources (e.g., an API endpoint). Also in this case
 the scenario relies on the use of OAuth2 protocol. The two cases are considered here:
